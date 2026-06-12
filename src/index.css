@@ -1,0 +1,955 @@
+:root {
+  --bg: #f4f5f7;
+  --panel: #ffffff;
+  --ink: #1d2433;
+  --muted: #6b7280;
+  --line: #e3e6eb;
+  --brand: #14532d;
+  --brand-2: #1f6f43;
+  --accent: #0d6efd;
+  --danger: #c0392b;
+  --ok: #15803d;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+}
+
+h1 {
+  font-size: 22px;
+  margin: 0;
+}
+h3 {
+  margin: 0 0 8px;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Каркас приложения ---------- */
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #0f1f17;
+  color: #d7e3dc;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px;
+  gap: 6px;
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 6px 6px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 10px;
+}
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  background: var(--brand-2);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.brand-text strong {
+  font-size: 13px;
+}
+.brand-text span {
+  font-size: 11px;
+  color: #8fb6a1;
+}
+
+.nav-group {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6f8d7c;
+  margin: 14px 8px 4px;
+}
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  color: #cdddd3;
+  font-size: 14px;
+}
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+}
+.nav-link.active {
+  background: var(--brand-2);
+  color: #fff;
+}
+.nav-icon {
+  width: 18px;
+  text-align: center;
+}
+
+.reset-btn {
+  margin-top: auto;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #9fb8aa;
+  padding: 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.reset-btn:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+.content {
+  padding: 26px 32px;
+  overflow: auto;
+}
+
+/* ---------- Страницы ---------- */
+.page {
+  max-width: 1080px;
+}
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.page-head-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.muted {
+  color: var(--muted);
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+
+.inst-card h3 {
+  font-size: 16px;
+}
+.inst-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+.inst-grid span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.inst-grid strong {
+  font-size: 13px;
+}
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--ink);
+}
+.stat-card:hover {
+  border-color: var(--brand-2);
+  text-decoration: none;
+}
+.stat-num {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--brand);
+}
+.stat-label {
+  color: var(--muted);
+}
+.howto {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.9;
+}
+
+/* ---------- Таблицы ---------- */
+.table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table th {
+  text-align: left;
+  background: #f8fafc;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.data-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #eef0f3;
+  vertical-align: middle;
+}
+.data-table tr:last-child td {
+  border-bottom: 0;
+}
+.data-table tr:hover td {
+  background: #fafbfc;
+}
+.actions-col {
+  text-align: right;
+  white-space: nowrap;
+}
+.empty {
+  background: var(--panel);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 40px;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ---------- Кнопки и поля ---------- */
+.btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+.btn:hover {
+  background: #f6f7f9;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn.primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.btn.primary:hover {
+  background: var(--brand-2);
+}
+.btn.ghost {
+  background: transparent;
+}
+.btn.danger {
+  color: var(--danger);
+}
+.btn.xs {
+  padding: 5px 10px;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.search,
+.select-lg,
+input,
+select,
+textarea {
+  font: inherit;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+}
+.search {
+  min-width: 220px;
+}
+.select-lg {
+  min-width: 280px;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid rgba(31, 111, 67, 0.25);
+  border-color: var(--brand-2);
+}
+
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.seg button {
+  border: 0;
+  background: #fff;
+  padding: 9px 16px;
+  cursor: pointer;
+  font: inherit;
+}
+.seg button.on {
+  background: var(--brand);
+  color: #fff;
+}
+
+/* ---------- Формы ---------- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.form-field.wide {
+  grid-column: 1 / -1;
+}
+.form-field label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.form-field input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+}
+.req {
+  color: var(--danger);
+  margin-left: 3px;
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  align-items: center;
+  margin-top: 20px;
+}
+.sticky-actions {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(transparent, var(--bg) 30%);
+  padding: 16px 0;
+}
+.ok-badge {
+  color: var(--ok);
+  font-weight: 600;
+  font-size: 13px;
+}
+.hint {
+  background: #fef9e7;
+  border: 1px solid #f6e58d;
+  color: #7a5c00;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+/* ---------- Модальное окно ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 50;
+}
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  width: min(720px, 100%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.modal-head h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.modal-body {
+  padding: 20px;
+  overflow: auto;
+}
+.icon-btn {
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+/* ---------- Ввод оценок ---------- */
+.grade-stats {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.grade-stats .stat {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 18px;
+  box-shadow: var(--shadow);
+}
+.grade-stats .stat span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.grade-stats .stat strong {
+  font-size: 18px;
+}
+
+/* ---------- Печатный документ ---------- */
+.printable {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0 60px;
+}
+.sheet {
+  background: #fff;
+  width: 210mm;
+  min-height: 297mm;
+  padding: 22mm 20mm;
+  box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(0, 0, 0, 0.12);
+  color: #000;
+  font-family: 'Times New Roman', Georgia, serif;
+  font-size: 13px;
+  line-height: 1.55;
+  /* Корректная типографика для печати: переносы и выравнивание */
+  -webkit-font-smoothing: antialiased;
+  word-spacing: 0.02em;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
+}
+.sheet p {
+  margin: 0;
+}
+
+.sheet .rk {
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.sheet .emblem {
+  text-align: center;
+  font-size: 46px;
+  color: var(--brand);
+  margin: 10px 0;
+}
+.sheet .doc-title {
+  text-align: center;
+  font-size: 30px;
+  letter-spacing: 0.18em;
+  margin: 8px 0;
+}
+.sheet.appendix .doc-title {
+  font-size: 22px;
+  letter-spacing: 0.1em;
+}
+.sheet .honors {
+  text-align: center;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--brand);
+}
+.sheet .serial {
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+  margin: 8px 0;
+}
+.sheet .reg,
+.sheet .note {
+  text-align: center;
+  font-size: 12px;
+  color: #333;
+}
+.sheet .note {
+  font-style: italic;
+  margin-top: 2px;
+}
+.sheet .inst-name {
+  text-align: center;
+  font-weight: 700;
+  margin: 12px 0;
+}
+.sheet .lead {
+  text-align: center;
+  margin: 26px 0 6px;
+}
+.sheet .fio-line {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  border-bottom: 1px solid #000;
+  padding-bottom: 6px;
+  margin: 0 0 18px;
+}
+.sheet .body-text {
+  text-align: justify;
+  text-justify: inter-word;
+  text-indent: 1.25cm;
+  margin: 8px 0;
+  orphans: 3;
+  widows: 3;
+}
+.sheet .body-text.center {
+  text-align: center;
+  text-indent: 0;
+}
+.sheet .body-text.no-indent {
+  text-indent: 0;
+}
+
+.sheet table.info {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 18px;
+}
+.sheet table.info td {
+  padding: 5px 8px;
+  border: 1px solid #999;
+  vertical-align: top;
+}
+.sheet table.info td.k {
+  width: 40%;
+  color: #333;
+}
+.sheet table.info td.v {
+  font-weight: 600;
+}
+
+.sheet .section-title {
+  font-weight: 700;
+  margin: 16px 0 8px;
+}
+.sheet table.grades-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.sheet table.grades-table th,
+.sheet table.grades-table td {
+  border: 1px solid #777;
+  padding: 5px 8px;
+  text-align: left;
+}
+.sheet table.grades-table th {
+  background: #f0f0f0;
+}
+.sheet table.grades-table td.c {
+  text-align: center;
+}
+.sheet table.grades-table .total-row td {
+  font-weight: 700;
+  background: #f7f7f7;
+}
+
+.sheet .sign-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 32px;
+  gap: 10mm;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.sheet .sign {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+}
+.sheet .sign-line {
+  display: block;
+  border-bottom: 1px solid #000;
+  height: 22px;
+  margin-bottom: 4px;
+}
+.sheet .place {
+  margin-top: 20px;
+  font-size: 12px;
+  text-align: center;
+}
+.sheet table.info,
+.sheet table.grades-table,
+.sheet .sign-row {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.sheet table.grades-table tr,
+.sheet table.info tr {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+/* Диплом-бланк: фото из Word с наложением полей */
+.sheet.diploma-blank {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: #fff;
+}
+.diploma-canvas {
+  position: relative;
+  width: 200mm;
+  aspect-ratio: 1268 / 951;
+  margin: 6mm auto;
+  user-select: none;
+}
+.diploma-canvas img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+.diploma-canvas .ov {
+  position: absolute;
+  transform: translateY(-50%);
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 600;
+  color: #1a2b6e;             /* «синие чернила» */
+  font-size: 10px;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.diploma-canvas .ov-fio {
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+.diploma-canvas .ov-spec,
+.diploma-canvas .ov-qual,
+.diploma-canvas .ov-inst {
+  font-size: 9px;
+  white-space: normal;
+  line-height: 1.15;
+  text-align: center;
+}
+.diploma-canvas .ov-num {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+.diploma-canvas .ov-sm {
+  font-size: 10px;
+  text-align: center;
+}
+.diploma-canvas .honors-stamp {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translate(-50%, 0) rotate(-6deg);
+  border: 2px solid #b00020;
+  color: #b00020;
+  padding: 4px 14px;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 4px;
+}
+.calibrate-hint {
+  max-width: 180mm;
+  text-align: center;
+  margin: 4mm auto 0;
+  font-size: 11px;
+}
+.calibrate-hint code {
+  background: #f0f1f4;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+/* ─── Режим калибровки полей ─── */
+.diploma-canvas .ov.editable {
+  outline: 1px dashed rgba(13, 110, 253, 0.7);
+  background: rgba(255, 235, 100, 0.25);
+  cursor: move;
+  min-height: 14px;
+  color: #1a2b6e;
+  user-select: none;
+}
+.diploma-canvas .ov.editable:hover {
+  background: rgba(255, 200, 80, 0.45);
+}
+.diploma-canvas .ov.editable.selected {
+  outline: 2px solid rgba(220, 0, 60, 0.85);
+  background: rgba(255, 180, 60, 0.55);
+  z-index: 5;
+}
+.diploma-canvas .ov-resize {
+  position: absolute;
+  right: -4px;
+  top: 0;
+  bottom: 0;
+  width: 7px;
+  cursor: ew-resize;
+  background: rgba(220, 0, 60, 0.7);
+  border-radius: 2px;
+}
+.diploma-canvas .ov-resize:hover {
+  background: rgba(220, 0, 60, 1);
+}
+
+.calibration-panel {
+  position: fixed;
+  top: 90px;
+  right: 24px;
+  width: 280px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  z-index: 60;
+  font-size: 13px;
+}
+.calibration-panel h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+.calibration-panel .muted {
+  font-size: 11px;
+  margin: 0 0 12px;
+}
+.calib-edit {
+  background: #fff8e1;
+  border: 1px solid #f0d860;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+.calib-edit strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--brand);
+  font-size: 12px;
+}
+.calib-grid {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+.calib-grid label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.calib-grid input {
+  width: 86px;
+  font-size: 12px;
+  padding: 4px 6px;
+}
+.calib-nudge {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.calib-nudge button {
+  padding: 6px 4px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.calib-nudge button:hover {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+.calib-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+.calib-list li button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 5px 8px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 12px;
+  color: var(--ink);
+}
+.calib-list li button:hover {
+  background: #f3f4f6;
+}
+.calib-list li.active button {
+  background: var(--brand);
+  color: #fff;
+}
+.diploma-bilingual .columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10mm;
+  position: relative;
+}
+.diploma-bilingual .columns::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #b5b5b5;
+}
+.diploma-bilingual .col {
+  display: flex;
+  flex-direction: column;
+}
+.diploma-bilingual .col-title {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.diploma-bilingual .doc-title {
+  font-size: 26px;
+  letter-spacing: 0.16em;
+  margin: 4px 0;
+}
+.diploma-bilingual .body-text {
+  font-size: 12.5px;
+  text-indent: 0.8cm;
+  margin: 6px 0;
+}
+.diploma-bilingual .fio-line {
+  font-size: 16px;
+  margin: 10px 0;
+}
+.diploma-bilingual .sign-line {
+  height: 18px;
+}
+
+/* ---------- Печать ---------- */
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+@media print {
+  .app-shell {
+    display: block;
+  }
+  .sidebar,
+  .no-print,
+  .page-head,
+  .doc-toolbar,
+  .hint {
+    display: none !important;
+  }
+  .content {
+    padding: 0;
+    overflow: visible;
+  }
+  .printable {
+    padding: 0;
+  }
+  .sheet {
+    box-shadow: none;
+    width: auto;
+    min-height: auto;
+    margin: 0;
+    padding: 16mm 18mm;
+  }
+  .sheet.diploma-blank {
+    padding: 0;
+  }
+  .diploma-canvas {
+    width: 195mm;
+    margin: 5mm auto;
+  }
+}
