@@ -23,10 +23,12 @@ export default function Layout({ children }) {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <div className="brand-logo">АПК</div>
+          <div className="brand-logo">
+            <img src="/polytech-logo.svg" alt="Polytech Logo" style={{width: '40px', height: '40px'}} />
+          </div>
           <div className="brand-text">
-            <strong>{inst.shortName}</strong>
-            <span>Дипломы и приложения</span>
+            <strong>Polytech College</strong>
+            <span>Almaty</span>
           </div>
         </div>
         <nav>

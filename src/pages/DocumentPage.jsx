@@ -11,11 +11,7 @@ import {
 
 const STORAGE_KEY = 'apc_diploma_positions_v1';
 
-// id → { cls, top, left, w, label, dataKey }.
-// Все top/left/w — проценты от размеров фото-бланка (1268×951 px).
-// Координаты получены пиксельным сканом fill-линий бланка.
 const DEFAULT_FIELDS = {
-  // ─── Левая (КЗ) ────────────────────────────────────────────
   numKZ:   { cls:'num',  top:38.1, left:18,   w:14, label:'ТКБ № (КЗ)',           dataKey:'diplomaNumber' },
   fioKZ:   { cls:'fio',  top:45.4, left:8,    w:25, label:'ФИО (КЗ)',             dataKey:'fullName' },
   yInKZ:   { cls:'sm',   top:54.0, left:13,   w:3,  label:'Год поступления (КЗ)',  dataKey:'yIn' },
@@ -64,7 +60,6 @@ function loadPositions() {
       return merged;
     }
   } catch {
-    /* corrupted */
   }
   return clone(DEFAULT_FIELDS);
 }
@@ -294,7 +289,6 @@ export default function DocumentPage() {
   );
 }
 
-// ─── Бланк диплома с фото и наложенными полями ────────────────────
 function DiplomaSheet({ t, positions, calibration, selectedId, onSelect, onUpdate }) {
   const { student: s } = t;
   const ctx = buildDataCtx(t);
@@ -347,12 +341,10 @@ function DiplomaSheet({ t, positions, calibration, selectedId, onSelect, onUpdat
   return (
     <div className="sheet diploma-blank">
       <div className="diploma-canvas">
-        <img src="/diplom-template.png" alt="Бланк диплома" />
+        <img src="/diplom-template.png" alt="Бланк диплома" className="no-print" />
         {FIELD_ORDER.map((id) => {
           const f = positions[id];
           const value = ctx[f.dataKey] ?? '';
-          // В обычном режиме поля без значения скрываем; в калибровке —
-          // показываем плашку с подписью, чтобы было что таскать.
           if (!calibration && !value) return null;
           const selected = selectedId === id;
           const cls = [

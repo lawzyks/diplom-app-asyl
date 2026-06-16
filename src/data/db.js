@@ -1,7 +1,3 @@
-// Имитация базы данных: реактивный репозиторий поверх localStorage.
-// Слой абстрагирован — функции можно заменить на вызовы REST API
-// (Node.js/Express) без изменения компонентов интерфейса.
-
 import { buildSeed, uid } from './seed.js';
 
 const KEY = 'apc_diploma_db_v2';
