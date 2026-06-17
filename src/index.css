@@ -138,6 +138,34 @@ a:hover {
   color: #fff;
 }
 
+.feedback-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, rgba(13, 110, 253, 0.15), rgba(13, 110, 253, 0.05));
+  border: 1px solid rgba(13, 110, 253, 0.25);
+  color: #6fb3e3;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.feedback-block:hover {
+  background: linear-gradient(135deg, rgba(13, 110, 253, 0.25), rgba(13, 110, 253, 0.15));
+  border-color: rgba(13, 110, 253, 0.45);
+  color: #fff;
+}
+
+.feedback-icon {
+  font-size: 16px;
+}
+.feedback-text {
+  white-space: nowrap;
+}
+
 .content {
   padding: 26px 32px;
   overflow: auto;

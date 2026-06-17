@@ -1,6 +1,7 @@
 import { Link } from '../lib/router.jsx';
 import * as db from '../data/db.js';
 import { useDB } from '../lib/util.js';
+import FeedbackBlock from './FeedbackBlock.jsx';
 
 const NAV = [
   { to: '/', label: 'Главная', icon: '▦' },
@@ -45,6 +46,7 @@ export default function Layout({ children }) {
             ),
           )}
         </nav>
+        <FeedbackBlock />
         <button
           className="reset-btn"
           onClick={() => {
