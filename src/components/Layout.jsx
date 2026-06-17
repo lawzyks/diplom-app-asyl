@@ -57,6 +57,7 @@ export default function Layout({ children }) {
         </button>
       </aside>
       <main className="content">{children}</main>
+      <div className="developer-credit">made by agpc student asylbek sovet</div>
     </div>
   );
 }

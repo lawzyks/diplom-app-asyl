@@ -141,6 +141,18 @@ a:hover {
 .content {
   padding: 26px 32px;
   overflow: auto;
+  position: relative;
+}
+
+.developer-credit {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  opacity: 0.5;
+  color: var(--ink);
+  pointer-events: none;
 }
 
 /* ---------- Страницы ---------- */
