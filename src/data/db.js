@@ -5,10 +5,41 @@ const KEY = 'apc_diploma_db_v2';
 let state = load();
 const listeners = new Set();
 
+// Мягкие миграции: применяются к старым данным в localStorage без
+// сброса всей базы. Каждая миграция — идемпотентна и возвращает
+// { state, changed } где changed=true означает «требуется persist».
+function migrate(state) {
+  if (!state || typeof state !== 'object') return { state, changed: false };
+  let changed = false;
+
+  // 2025-06: переименование колледжа
+  // «Алматинский политехнический колледж» → КГКП «ALMATY POLYTECHNIC COLLEGE»
+  const inst = state.institution;
+  if (inst && typeof inst.nameRu === 'string' &&
+      /Алматинский политехнический/i.test(inst.nameRu)) {
+    state.institution = {
+      ...inst,
+      nameKz: '«ALMATY POLYTECHNIC COLLEGE» КМҚК',
+      nameRu: 'КГКП «ALMATY POLYTECHNIC COLLEGE»',
+      shortName: 'ALMATY POLYTECHNIC COLLEGE',
+    };
+    changed = true;
+  }
+
+  return { state, changed };
+}
+
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const { state: migrated, changed } = migrate(parsed);
+      if (changed) {
+        localStorage.setItem(KEY, JSON.stringify(migrated));
+      }
+      return migrated;
+    }
   } catch {
     /* повреждённые данные — пересоздаём */
   }

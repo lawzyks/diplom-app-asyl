@@ -25,11 +25,11 @@ export default function Layout({ children }) {
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-logo">
-            <img src="/polytech-logo.svg" alt="Polytech Logo" style={{width: '40px', height: '40px'}} />
+            <img src="/polytech-logo.svg" alt="ALMATY POLYTECHNIC COLLEGE" style={{width: '40px', height: '40px'}} />
           </div>
           <div className="brand-text">
-            <strong>Polytech College</strong>
-            <span>Almaty</span>
+            <strong>ALMATY POLYTECHNIC COLLEGE</strong>
+            <span>КГКП · г. Алматы</span>
           </div>
         </div>
         <nav>

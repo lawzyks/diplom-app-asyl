@@ -2,12 +2,8 @@ import { getDatabase } from './database.js';
 
 const institutions = [
   {
-    name: 'Polytech College Almaty',
-    description: 'Leading technical college in Kazakhstan'
-  },
-  {
-    name: 'Institute of Applied Sciences',
-    description: 'Applied sciences and technology'
+    name: 'КГКП «ALMATY POLYTECHNIC COLLEGE»',
+    description: 'Коммунальное государственное казённое предприятие «ALMATY POLYTECHNIC COLLEGE», г. Алматы'
   }
 ];
 

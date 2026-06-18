@@ -696,123 +696,71 @@ textarea:focus {
   break-inside: avoid;
 }
 
-/* Диплом-бланк: фото из Word с наложением полей */
-.sheet.diploma-blank {
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  background: #fff;
-}
-.diploma-canvas {
+/* Превью: скан настоящего бланка на всю ширину контейнера, значения */
+/* накладываются абсолютным позиционированием в % (см. transform SCAN */
+/* в BlankSheet.jsx — он мапит мм-координаты в проценты скана с       */
+/* учётом декоративных полей сверху и по бокам).                     */
+.diploma-preview {
   position: relative;
-  width: 200mm;
-  aspect-ratio: 1268 / 951;
-  margin: 6mm auto;
+  width: min(900px, 100%);
+  margin: 12px auto 30px;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
   user-select: none;
 }
-.diploma-canvas img {
+.diploma-preview > img {
   width: 100%;
-  height: 100%;
+  height: auto;
   display: block;
-  object-fit: contain;
   pointer-events: none;
 }
-.diploma-canvas .ov {
+.diploma-preview-overlay {
   position: absolute;
-  transform: translateY(-50%);
+  inset: 0;
+  pointer-events: none;
   font-family: 'Times New Roman', Times, serif;
-  font-weight: 600;
-  color: #1a2b6e;             /* «синие чернила» */
-  font-size: 10px;
-  line-height: 1.1;
-  letter-spacing: 0.01em;
-  text-align: left;
+  color: #1a2b6e;
+}
+.diploma-preview-overlay .sp-field {
+  position: absolute;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
 }
-.diploma-canvas .ov-fio {
-  font-size: 13px;
+.diploma-preview-overlay .sp-bold {
   font-weight: 700;
-  text-align: center;
 }
-.diploma-canvas .ov-spec,
-.diploma-canvas .ov-qual,
-.diploma-canvas .ov-inst {
-  font-size: 9px;
+.diploma-preview-overlay .sp-multi {
   white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
   line-height: 1.15;
-  text-align: center;
 }
-.diploma-canvas .ov-num {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-align: center;
-}
-.diploma-canvas .ov-sm {
-  font-size: 10px;
-  text-align: center;
-}
-.diploma-canvas .honors-stamp {
-  position: absolute;
-  top: 18%;
-  left: 50%;
-  transform: translate(-50%, 0) rotate(-6deg);
-  border: 2px solid #b00020;
-  color: #b00020;
-  padding: 4px 14px;
-  font-family: 'Times New Roman', Times, serif;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.05em;
-  background: rgba(255, 255, 255, 0.55);
-  border-radius: 4px;
-}
-.calibrate-hint {
-  max-width: 180mm;
-  text-align: center;
-  margin: 4mm auto 0;
-  font-size: 11px;
-}
-.calibrate-hint code {
-  background: #f0f1f4;
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 11px;
-}
-
-/* ─── Режим калибровки полей ─── */
-.diploma-canvas .ov.editable {
-  outline: 1px dashed rgba(13, 110, 253, 0.7);
-  background: rgba(255, 235, 100, 0.25);
+.diploma-preview-overlay .sp-edit {
+  pointer-events: auto;
   cursor: move;
-  min-height: 14px;
-  color: #1a2b6e;
+  outline: 1px dashed rgba(13, 110, 253, 0.7);
+  background: rgba(255, 235, 100, 0.35);
   user-select: none;
-}
-.diploma-canvas .ov.editable:hover {
-  background: rgba(255, 200, 80, 0.45);
-}
-.diploma-canvas .ov.editable.selected {
-  outline: 2px solid rgba(220, 0, 60, 0.85);
-  background: rgba(255, 180, 60, 0.55);
-  z-index: 5;
-}
-.diploma-canvas .ov-resize {
-  position: absolute;
-  right: -4px;
-  top: 0;
-  bottom: 0;
-  width: 7px;
-  cursor: ew-resize;
-  background: rgba(220, 0, 60, 0.7);
   border-radius: 2px;
 }
-.diploma-canvas .ov-resize:hover {
-  background: rgba(220, 0, 60, 1);
+.diploma-preview-overlay .sp-edit:hover {
+  background: rgba(255, 200, 80, 0.55);
+}
+.diploma-preview-overlay .sp-selected {
+  outline: 2px solid rgba(220, 0, 60, 0.85);
+  background: rgba(255, 180, 60, 0.6);
+  z-index: 5;
+}
+
+/* Скрытый BlankSheet под скан-превью — нужен только для печати. */
+.print-only { display: none; }
+@media print {
+  .print-only { display: block !important; }
+  .diploma-preview { display: none !important; }
 }
 
 .calibration-panel {
@@ -955,6 +903,109 @@ textarea:focus {
   height: 18px;
 }
 
+/* ---------- Печать на бланке A5 (150 × 210 мм) ---------- */
+/* Координаты — в МИЛЛИМЕТРАХ от верхнего левого угла листа.       */
+/* Никакого центрирования, никакого «fit to page». Размер @page    */
+/* и блока совпадают, чтобы попасть точно на пред-печатные линии   */
+/* физического бланка диплома.                                     */
+.sheet.blank-sheet {
+  position: relative;
+  width: 150mm;
+  height: 210mm;
+  padding: 0;
+  margin: 0;
+  background: #fff;
+  color: #1a2b6e;            /* «синие чернила» */
+  font-family: 'Times New Roman', Times, serif;
+  box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+}
+.printable-blank {
+  padding: 20px 0 60px;
+}
+
+.sheet.blank-sheet .bf {
+  position: absolute;
+  /* НЕТ transform: translateY — координата y задаёт верхнюю кромку текста. */
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 11px;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #1a2b6e;
+}
+.sheet.blank-sheet .bf-bold {
+  font-weight: 700;
+}
+/* Длинные поля (специальность, квалификация) — разрешаем перенос */
+.sheet.blank-sheet .bf-multi {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.15;
+}
+
+/* «Призрак» формы — только на экране, помогает визуально совместить */
+.sheet.blank-sheet .bf-ghost {
+  position: absolute;
+  inset: 0;
+  color: #b8b8b8;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 9px;
+  pointer-events: none;
+}
+.sheet.blank-sheet .bf-ghost p {
+  position: absolute;
+  margin: 0;
+}
+
+/* Линейка по краям листа в режиме калибровки */
+.sheet.blank-sheet .bf-ruler {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-size: 7px;
+  color: #c43;
+}
+.sheet.blank-sheet .bf-tick {
+  position: absolute;
+}
+.sheet.blank-sheet .bf-tick-x {
+  top: 0;
+  width: 0;
+  border-left: 1px solid rgba(196, 51, 51, 0.25);
+  height: 4mm;
+  padding-left: 1px;
+}
+.sheet.blank-sheet .bf-tick-y {
+  left: 0;
+  height: 0;
+  border-top: 1px solid rgba(196, 51, 51, 0.25);
+  width: 4mm;
+  padding-top: 0;
+}
+
+/* Режим калибровки: поля можно тянуть */
+.sheet.blank-sheet .bf-edit {
+  outline: 1px dashed rgba(13, 110, 253, 0.6);
+  background: rgba(255, 235, 100, 0.25);
+  cursor: move;
+  user-select: none;
+  min-height: 12px;
+}
+.sheet.blank-sheet .bf-edit:hover {
+  background: rgba(255, 200, 80, 0.45);
+}
+.sheet.blank-sheet .bf-selected {
+  outline: 2px solid rgba(220, 0, 60, 0.85);
+  background: rgba(255, 180, 60, 0.55);
+  z-index: 5;
+}
+
 /* ---------- Печать ---------- */
 @page {
   size: A4 portrait;
@@ -991,5 +1042,20 @@ textarea:focus {
   .diploma-canvas {
     width: 195mm;
     margin: 5mm auto;
+  }
+  /* Бланк A5: страница 150×210, без рамок и подсказок */
+  .sheet.blank-sheet {
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: 150mm !important;
+    height: 210mm !important;
+    overflow: visible;
+  }
+  .sheet.blank-sheet .bf-ghost,
+  .sheet.blank-sheet .bf-ruler {
+    display: none !important;
+  }
+  .printable-blank {
+    padding: 0 !important;
   }
 }

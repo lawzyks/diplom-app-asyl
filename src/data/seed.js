@@ -1,5 +1,5 @@
 // Начальные (демо) данные. Учебное заведение, специальности, квалификации и
-// дисциплины основаны на данных Алматинского политехнического колледжа.
+// дисциплины основаны на данных КГКП «ALMATY POLYTECHNIC COLLEGE».
 // Все поля редактируются сотрудником колледжа в интерфейсе справочников.
 
 export const uid = () =>
@@ -12,8 +12,17 @@ const SP_EL = 'sp_el';
 const SP_DIG = 'sp_dig';
 const SP_AUTO = 'sp_auto';
 
+const SP_INFOSEC = 'sp_infosec';
+const SP_RADIO = 'sp_radio';
+const SP_MACHINE = 'sp_machine';
+
 const QL_SOFT = 'ql_soft';
+const QL_SOFT_IS = 'ql_soft_is';
 const QL_NET = 'ql_net';
+const QL_NET_SYS = 'ql_net_sys';
+const QL_RADIO_INSTALL = 'ql_radio_install';
+const QL_RADIO_MULTI = 'ql_radio_multi';
+const QL_MACHINE = 'ql_machine';
 const QL_EL = 'ql_el';
 const QL_DIG = 'ql_dig';
 const QL_AUTO = 'ql_auto';
@@ -26,37 +35,84 @@ const STUDENT_LOW = 'st_low';
 const STUDENT_MIX = 'st_mix';
 const STUDENT_IT2 = 'st_it2';
 const STUDENT_NET = 'st_net';
+const STUDENT_DAMIR = 'st_damir';
 
 export function buildSeed() {
+  // Образец заполненного диплома (Зарқымбек Дамир, ТКБ № 2208501)
+  // показывает, что на бланке колледж пишется как «ALMATY POLYTECHNIC
+  // COLLEGE» с префиксом КГКП / КМҚК — этим и руководствуемся.
   const institution = {
-    nameKz:
-      '«Алматы политехникалық колледжі» мемлекеттік коммуналдық қазыналық кәсіпорны',
-    nameRu:
-      'Государственное коммунальное казённое предприятие «Алматинский политехнический колледж»',
-    shortName: 'Алматинский политехнический колледж',
+    nameKz: '«ALMATY POLYTECHNIC COLLEGE» КМҚК',
+    nameRu: 'КГКП «ALMATY POLYTECHNIC COLLEGE»',
+    shortName: 'ALMATY POLYTECHNIC COLLEGE',
     authority: 'Управление образования города Алматы',
     country: 'Республика Казахстан',
     city: 'Алматы',
     address: 'Республика Казахстан, г. Алматы',
     license: 'KZ__LAA________ от __.__.____',
-    director: '__________________',
-    secretary: '__________________',
+    director: 'М. Омарбеков',
+    secretary: 'М. Мәлікова',
   };
 
   const specialties = [
-    { id: SP_SOFT, code: '06130100', name: 'Программное обеспечение (по видам)' },
-    { id: SP_NET, code: '06120100', name: 'Вычислительная техника и информационные сети (по видам)' },
-    { id: SP_EL, code: '07130100', name: 'Электрооборудование (по видам и отраслям)' },
-    { id: SP_DIG, code: '07140500', name: 'Цифровая техника (по видам)' },
-    { id: SP_AUTO, code: '07161300', name: 'Техническое обслуживание, ремонт и эксплуатация автомобильного транспорта' },
+    { id: SP_SOFT,    code: '06130100', name: 'Программное обеспечение',
+      nameKz: 'Бағдарламалық қамтамасыз ету' },
+    { id: SP_NET,     code: '06120100', name: 'Вычислительная техника и информационные сети',
+      nameKz: 'Есептеу техникасы және ақпараттық желілер' },
+    { id: SP_INFOSEC, code: '06120200', name: 'Системы информационной безопасности',
+      nameKz: 'Ақпараттық қауіпсіздік жүйелері' },
+    { id: SP_RADIO,   code: '07140900', name: 'Радиотехника, электроника и телекоммуникации',
+      nameKz: 'Радиотехника, электроника және телекоммуникациялар' },
+    { id: SP_MACHINE, code: '07151100', name: 'Эксплуатация и техническое обслуживание машин и оборудования',
+      nameKz: 'Машиналар мен жабдықтарды пайдалану және техникалық қызмет көрсету' },
+    { id: SP_EL,      code: '07130100', name: 'Электрооборудование (по видам и отраслям)',
+      nameKz: 'Электр жабдықтары (түрлері мен салалары бойынша)' },
+    { id: SP_DIG,     code: '07140500', name: 'Цифровая техника (по видам)',
+      nameKz: 'Цифрлық техника (түрлері бойынша)' },
+    { id: SP_AUTO,    code: '07161300', name: 'Техническое обслуживание, ремонт и эксплуатация автомобильного транспорта',
+      nameKz: 'Автомобиль көлігіне техникалық қызмет көрсету, жөндеу және пайдалану' },
   ];
 
   const qualifications = [
-    { id: QL_SOFT, specialtyId: SP_SOFT, code: '4S06130103', name: 'Техник-программист' },
-    { id: QL_NET, specialtyId: SP_NET, code: '4S06120103', name: 'Техник по обслуживанию компьютерных устройств и сетей' },
-    { id: QL_EL, specialtyId: SP_EL, code: '4S07130103', name: 'Техник-электрик' },
-    { id: QL_DIG, specialtyId: SP_DIG, code: '4S07140503', name: 'Техник' },
-    { id: QL_AUTO, specialtyId: SP_AUTO, code: '4S07161303', name: 'Техник-механик' },
+    // 06130100 — Программное обеспечение
+    { id: QL_SOFT,    specialtyId: SP_SOFT,    code: '4S06130103',
+      name: 'Разработчик программного обеспечения',
+      nameKz: 'Бағдарламалық қамтамасыз етуді әзірлеуші' },
+    { id: QL_SOFT_IS, specialtyId: SP_SOFT,    code: '4S06130105',
+      name: 'Техник информационных систем',
+      nameKz: 'Ақпараттық жүйелер технигі' },
+
+    // 06120100 — Вычислительная техника и информационные сети
+    { id: QL_NET,     specialtyId: SP_NET,     code: '4S06120103',
+      name: 'Техник по обслуживанию компьютерных устройств и сетей',
+      nameKz: 'Компьютерлік құрылғылар мен желілерге қызмет көрсету жөніндегі техник' },
+    { id: QL_NET_SYS, specialtyId: SP_NET,     code: '4S06120102',
+      name: 'Техник сетевого и системного администрирования',
+      nameKz: 'Желілік және жүйелік әкімшілендіру технигі' },
+
+    // 07140900 — Радиотехника, электроника и телекоммуникации
+    { id: QL_RADIO_INSTALL, specialtyId: SP_RADIO, code: '3W07140901',
+      name: 'Электромонтажник-наладчик телекоммуникационного оборудования и каналов связи',
+      nameKz: 'Телекоммуникациялық жабдықтар мен байланыс арналарын монтаждаушы-баптаушы' },
+    { id: QL_RADIO_MULTI,   specialtyId: SP_RADIO, code: '4S07140905',
+      name: 'Техник мультимедийных и цифровых систем',
+      nameKz: 'Мультимедиялық және цифрлық жүйелер технигі' },
+
+    // 07151100 — Эксплуатация и техническое обслуживание машин и оборудования
+    { id: QL_MACHINE, specialtyId: SP_MACHINE, code: '4S07151102',
+      name: 'Техник-механик',
+      nameKz: 'Техник-механик' },
+
+    // Прочие специальности колледжа
+    { id: QL_EL,      specialtyId: SP_EL,      code: '4S07130103',
+      name: 'Техник-электрик',
+      nameKz: 'Техник-электрик' },
+    { id: QL_DIG,     specialtyId: SP_DIG,     code: '4S07140503',
+      name: 'Техник',
+      nameKz: 'Техник' },
+    { id: QL_AUTO,    specialtyId: SP_AUTO,    code: '4S07161303',
+      name: 'Техник-механик',
+      nameKz: 'Техник-механик' },
   ];
 
   // Учебный план специальности «Программное обеспечение (по видам)»
@@ -230,6 +286,31 @@ export function buildSeed() {
         'Проектирование локальной сети учебного корпуса',
       finalAttestationType: 'защита дипломного проекта',
       finalGrade: '4',
+      withHonors: false,
+    },
+    // Реальный выпускник 2025 года (по образцу диплома, ТКБ № 2208501).
+    {
+      id: STUDENT_DAMIR,
+      lastName: 'Зарқымбек',
+      firstName: 'Дамир',
+      middleName: 'Дәулетұлы',
+      iin: '',
+      birthDate: '',
+      specialtyId: SP_NET,
+      qualificationId: QL_NET_SYS,
+      educationForm: 'очная',
+      prevEducation: 'основное среднее образование',
+      admissionYear: 2024,
+      graduationYear: 2025,
+      diplomaSeries: 'ТКБ',
+      diplomaNumber: '2208501',
+      registrationNumber: '3132',
+      issueDate: '2025-06-30',
+      protocolNumber: '',
+      protocolDate: '2025-06-24',
+      diplomaProjectTheme: '',
+      finalAttestationType: 'защита дипломного проекта',
+      finalGrade: '5',
       withHonors: false,
     },
   ];
