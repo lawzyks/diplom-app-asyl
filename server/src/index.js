@@ -4,7 +4,7 @@ import { initializeDatabase, closeDatabase, getDatabase } from './data/database.
 import { seedDatabase } from './data/seed.js';
 
 const app = express();
-const PORT = 3001;
+const PORT = 3002;
 
 app.use(cors());
 app.use(express.json());

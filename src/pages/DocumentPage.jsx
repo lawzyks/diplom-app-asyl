@@ -61,6 +61,10 @@ export default function DocumentPage() {
   //                  (KZ слева, RU справа). Под физический бланк, который
   //                  кладут в принтер разложенным.
   const [printMode, setPrintMode] = useState('a4-spread');
+  // Печатать ли скан бланка как фон (true — для тестовой печати на
+  // чистой бумаге, чтобы видеть как ляжет; false — для финальной
+  // печати поверх физического типографского бланка).
+  const [printWithScan, setPrintWithScan] = useState(false);
   const t = useTranscript(studentId);
 
   // Печать всегда выводит A5 выбранной стороны: на экране показан
@@ -153,6 +157,17 @@ export default function DocumentPage() {
               </button>
             </div>
           )}
+          {view !== 'appendix' && (
+            <button
+              className={`btn${printWithScan ? ' primary' : ''}`}
+              onClick={() => setPrintWithScan((v) => !v)}
+              title={printWithScan
+                ? 'Скан бланка идёт в печать (тестовая печать на чистой бумаге)'
+                : 'Печать только значений (поверх настоящего типографского бланка)'}
+            >
+              {printWithScan ? '🖼 Фон вкл.' : '🖼 Фон выкл.'}
+            </button>
+          )}
           <button
             className="btn primary"
             disabled={!t}
@@ -196,7 +211,7 @@ export default function DocumentPage() {
             <>
               <DiplomaSpread t={t} calibration={calibration} />
               {/* Скрытые BlankSheet обе стороны — для печати. */}
-              <PrintArea t={t} printMode={printMode} />
+              <PrintArea t={t} printMode={printMode} withScan={printWithScan} />
             </>
           )}
           {view === 'blank' && (
@@ -215,7 +230,7 @@ export default function DocumentPage() {
               />
               {/* В режиме «Бланк A5» печатаем тем же PrintArea, чтобы
                   пользователь не видел дублирующиеся листы на экране. */}
-              <PrintArea t={t} printMode={printMode} />
+              <PrintArea t={t} printMode={printMode} withScan={printWithScan} />
             </>
           )}
           {view === 'appendix' && <AppendixSheet t={t} />}
@@ -229,16 +244,23 @@ export default function DocumentPage() {
 // На экране не видна (`display: none`), при `window.print()` именно
 // её показывает CSS `@media print { .print-only { display: block } }`.
 // Режим выбирается в шапке вкладки.
-function PrintArea({ t, printMode }) {
+function PrintArea({ t, printMode, withScan }) {
   if (printMode === 'a4-spread') {
     // Печать поверх типографского бланка: A4 ландшафт, margin 0,
     // обе стороны (KZ + RU) лежат на странице абсолютными мм-
-    // координатами. Никакого scale и центрирования — координаты
-    // в DEFAULTS_RU/KZ и есть финальные мм на бумаге.
+    // координатами. Если withScan=true — под значениями ещё едет
+    // скан бланка (для тестовой печати на чистой бумаге).
     return (
-      <div className="print-only print-area-a4" aria-hidden>
+      <div className={`print-only print-area-a4${withScan ? ' with-scan' : ''}`} aria-hidden>
         <style>{'@page { size: A4 landscape; margin: 0; }'}</style>
         <div className="print-spread-a4">
+          {withScan && (
+            <img
+              src="/diplom-template.jpg"
+              alt=""
+              className="print-bg-scan"
+            />
+          )}
           <BlankSheet t={t} side="kz" calibration={false} ghost={false} suppressPageStyle />
           <BlankSheet t={t} side="ru" calibration={false} ghost={false} suppressPageStyle />
         </div>

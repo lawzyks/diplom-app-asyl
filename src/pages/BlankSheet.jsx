@@ -144,14 +144,19 @@ function loadPositions() {
 }
 
 function persistPositions(positions) {
-  // Сохраняем только калибруемые поля (x, y, w, hidden) — остальное в коде.
+  // Сохраняем калибруемые поля (x, y, w, fs, hidden) — остальное в коде.
   const minimal = { ru: {}, kz: {} };
   for (const side of ['ru', 'kz']) {
     for (const [id, f] of Object.entries(positions[side])) {
+      const def = ALL_DEFAULTS[side]?.[id];
       minimal[side][id] = {
         x: +Number(f.x).toFixed(2),
         y: +Number(f.y).toFixed(2),
         w: +Number(f.w).toFixed(2),
+        // fs сохраняем только если отличается от дефолта — экономим место
+        ...(def && +Number(f.fs).toFixed(1) !== +Number(def.fs).toFixed(1)
+          ? { fs: +Number(f.fs).toFixed(1) }
+          : {}),
         ...(f.hidden ? { hidden: true } : {}),
       };
     }
@@ -820,6 +825,36 @@ function DiplomaCalibPanel({ store, selectedId, onSelect, ctx }) {
             <button onClick={() => nudge('w', 0.5)}>+ш</button>
           </div>
 
+          <div className="calib-grid" style={{ marginTop: '10px' }}>
+            <label>
+              кегль, px
+              <input
+                type="number" step="0.5" min="6" max="40"
+                value={Number(sel.fs).toFixed(1)}
+                onChange={(e) => store.updateField(sideKey, id, {
+                  fs: clamp(num(e.target.value), 6, 40),
+                })}
+              />
+            </label>
+          </div>
+          <div className="calib-nudge" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+            <button onClick={() => store.updateField(sideKey, id, { fs: clamp(sel.fs - 0.5, 6, 40) })} title="Кегль −0.5">A−</button>
+            <button onClick={() => store.updateField(sideKey, id, { fs: clamp(sel.fs + 0.5, 6, 40) })} title="Кегль +0.5">A+</button>
+            <button
+              onClick={() => {
+                const def = positions[sideKey]?.[id] && (
+                  ['kz','ru'].map(() => null), null  // placeholder; actual default from ALL_DEFAULTS via store
+                );
+                // Сбрасываем только fs к дефолту: используем resetField? Нет, он сбрасывает всё.
+                // Берём fs из изначального DEFAULTS через сравнение метки — fs хранится в самом f.
+                // Простейший путь — обновить fs на дефолтный, который лежит в DEFAULTS_*.
+                const defFs = (sideKey === 'kz' ? DEFAULTS_KZ : DEFAULTS_RU)[id]?.fs;
+                if (defFs != null) store.updateField(sideKey, id, { fs: defFs });
+              }}
+              title="Кегль к дефолту"
+            >A↺</button>
+          </div>
+
           <label style={{ display: 'block', marginTop: '10px', fontSize: '11px', color: 'var(--muted)' }}>
             Текст поля{hasOverride ? ' ✎ (override)' : ''}
             <input
@@ -1073,6 +1108,28 @@ function BlankCalibPanel({
             <button onClick={() => nudge(selectedId, 'x', 0.2)} title="Вправо 0.2 мм">→</button>
             <button onClick={() => nudge(selectedId, 'w', -0.5)} title="Уже">−ш</button>
             <button onClick={() => nudge(selectedId, 'w', 0.5)} title="Шире">+ш</button>
+          </div>
+
+          <div className="calib-grid" style={{ marginTop: '10px' }}>
+            <label>
+              кегль, px
+              <input
+                type="number" step="0.5" min="6" max="40"
+                value={Number(sel.fs).toFixed(1)}
+                onChange={(e) => onUpdate(selectedId, { fs: clamp(numVal(e.target.value), 6, 40) })}
+              />
+            </label>
+          </div>
+          <div className="calib-nudge" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+            <button onClick={() => onUpdate(selectedId, { fs: clamp(sel.fs - 0.5, 6, 40) })} title="Кегль −0.5">A−</button>
+            <button onClick={() => onUpdate(selectedId, { fs: clamp(sel.fs + 0.5, 6, 40) })} title="Кегль +0.5">A+</button>
+            <button
+              onClick={() => {
+                const defFs = (side === 'kz' ? DEFAULTS_KZ : DEFAULTS_RU)[selectedId]?.fs;
+                if (defFs != null) onUpdate(selectedId, { fs: defFs });
+              }}
+              title="Кегль к дефолту"
+            >A↺</button>
           </div>
 
           <label style={{ display: 'block', marginTop: '10px', fontSize: '11px', color: 'var(--muted)' }}>

@@ -858,16 +858,40 @@ textarea:focus {
 /* Координаты внутри BlankSheet и есть финальные мм на A4-ландшафте.*/
 .print-area-a4 .print-spread-a4 {
   display: flex;
+  position: relative;
   width: 297mm;
   height: 210mm;
+  overflow: hidden;
 }
 .print-area-a4 .print-spread-a4 > .sheet.blank-sheet {
+  position: relative;
+  z-index: 1;
+  background: transparent;
   page-break-after: avoid;
   break-after: avoid;
   box-shadow: none !important;
   margin: 0 !important;
   width: 150mm !important;
   height: 210mm !important;
+}
+/* Скан бланка как подложка под значения (включается тумблером     */
+/* «Фон вкл.», для тестовой печати на чистой бумаге). На печать на */
+/* настоящий бланк фон не нужен — там декор типографский.          */
+/*                                                                  */
+/* Размер и позиция скана подобраны так, чтобы его форма (внутри   */
+/* декоративных полей) совпала с системой логических мм значений.  */
+/* Это инверсия SCAN-констант из BlankSheet.jsx (yScale=0.775,     */
+/* yOffset=22.3%, xScale=0.892, xOffset=5.2%):                     */
+/*   width  = 297 / 0.892 ≈ 333mm,  left = -5.2% × 333 ≈ -17.3mm   */
+/*   height = 210 / 0.775 ≈ 271mm,  top  = -22.3% × 271 ≈ -60.4mm  */
+.print-area-a4.with-scan .print-bg-scan {
+  position: absolute;
+  top: -60.4mm;
+  left: -17.3mm;
+  width: 333mm;
+  height: 271mm;
+  object-fit: fill;
+  z-index: 0;
 }
 
 .calibration-panel {
