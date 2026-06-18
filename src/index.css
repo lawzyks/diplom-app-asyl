@@ -182,6 +182,9 @@ a:hover {
   color: var(--ink);
   pointer-events: none;
 }
+@media print {
+  .developer-credit { display: none !important; }
+}
 
 /* ---------- Страницы ---------- */
 .page {
@@ -755,12 +758,116 @@ textarea:focus {
   background: rgba(255, 180, 60, 0.6);
   z-index: 5;
 }
+/* Скрытое поле: при калибровке полупрозрачное и с пунктиром, чтобы
+   можно было выбрать и вернуть. На печать не идёт.                  */
+.diploma-preview-overlay .sp-hidden {
+  opacity: 0.25;
+  outline: 1px dashed rgba(170, 170, 170, 0.8);
+  text-decoration: line-through;
+}
+.sheet.blank-sheet .bf-hidden {
+  opacity: 0.25;
+  outline: 1px dashed rgba(170, 170, 170, 0.8);
+  text-decoration: line-through;
+}
+
+/* Цветная кнопочная палитра в калибровке: однозначно отделяем
+   опасные действия (красный) от служебных и сейв-операций.       */
+.calibration-panel .calib-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.calibration-panel .calib-btn:hover { filter: brightness(0.97); }
+.calibration-panel .calib-btn-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.calibration-panel .calib-btn-primary:hover { background: var(--brand-2); }
+.calibration-panel .calib-btn-danger {
+  background: #fff1f0;
+  border-color: #c0392b;
+  color: #c0392b;
+}
+.calibration-panel .calib-btn-danger:hover {
+  background: #c0392b;
+  color: #fff;
+}
+.calibration-panel .calib-btn-info {
+  background: #eef6ff;
+  border-color: #4d8ad8;
+  color: #2563eb;
+}
+.calibration-panel .calib-btn-info:hover {
+  background: #2563eb;
+  color: #fff;
+}
+.calibration-panel .calib-btn-ok {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #047857;
+}
+.calibration-panel .calib-btn-ok:hover {
+  background: #047857;
+  color: #fff;
+}
+.calibration-panel .calib-btn-ghost {
+  margin-top: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  background: transparent;
+}
+.calibration-panel .calib-field-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+.calibration-panel .calib-global-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 12px 0 6px;
+}
+
+/* Скрытые поля в списке — серые с зачёркиванием */
+.calibration-panel .calib-list li.hidden-field button {
+  color: #9ca3af;
+  text-decoration: line-through;
+}
 
 /* Скрытый BlankSheet под скан-превью — нужен только для печати. */
 .print-only { display: none; }
 @media print {
   .print-only { display: block !important; }
   .diploma-preview { display: none !important; }
+  /* В режиме «Бланк A5» на экране уже видны BlankSheet'ы — чтобы они
+     не уехали в принтер вторым/третьим экземпляром, прячем их при   */
+  /*  печати. Печатает только .print-only.                            */
+  .printable-blank > .sheet.blank-sheet { display: none !important; }
+}
+
+/* A4-разворот: KZ слева, RU справа, без скейла и центрирования.    */
+/* Координаты внутри BlankSheet и есть финальные мм на A4-ландшафте.*/
+.print-area-a4 .print-spread-a4 {
+  display: flex;
+  width: 297mm;
+  height: 210mm;
+}
+.print-area-a4 .print-spread-a4 > .sheet.blank-sheet {
+  page-break-after: avoid;
+  break-after: avoid;
+  box-shadow: none !important;
+  margin: 0 !important;
+  width: 150mm !important;
+  height: 210mm !important;
 }
 
 .calibration-panel {

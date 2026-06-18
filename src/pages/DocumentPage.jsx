@@ -54,6 +54,13 @@ export default function DocumentPage() {
   const [view, setView] = useState('diploma'); // diploma | appendix | blank
   const [blankGhost, setBlankGhost] = useState(true);
   const [calibration, setCalibration] = useState(false);
+  // Режим печати:
+  //   'a5'        — две страницы A5 портрет (диплом подаётся сложенным,
+  //                  печатается одна сторона за раз).
+  //   'a4-spread' — одна страница A4 ландшафт с двумя сторонами рядом
+  //                  (KZ слева, RU справа). Под физический бланк, который
+  //                  кладут в принтер разложенным.
+  const [printMode, setPrintMode] = useState('a4-spread');
   const t = useTranscript(studentId);
 
   // Печать всегда выводит A5 выбранной стороны: на экране показан
@@ -128,13 +135,37 @@ export default function DocumentPage() {
               {blankGhost ? '👁 Подсказки вкл.' : '👁 Подсказки выкл.'}
             </button>
           )}
+          {view !== 'appendix' && (
+            <div className="seg" title="Как принтер видит бумагу">
+              <button
+                className={printMode === 'a4-spread' ? 'on' : ''}
+                onClick={() => setPrintMode('a4-spread')}
+                title="Разложенный диплом (A4 ландшафт, обе стороны рядом)"
+              >
+                A4 разворот
+              </button>
+              <button
+                className={printMode === 'a5' ? 'on' : ''}
+                onClick={() => setPrintMode('a5')}
+                title="Сложенный диплом (две страницы A5 портрет, по очереди)"
+              >
+                A5 × 2
+              </button>
+            </div>
+          )}
           <button
             className="btn primary"
             disabled={!t}
             onClick={view === 'appendix' ? () => window.print() : handlePrint}
-            title="Печать на физическом бланке (A5, обе стороны)"
+            title={
+              view === 'appendix'
+                ? 'Печать приложения'
+                : printMode === 'a4-spread'
+                  ? 'Печать на разложенном бланке (A4 ландшафт, обе стороны)'
+                  : 'Печать двух A5: сначала RU, потом KZ'
+            }
           >
-            🖨 Печать
+            🖨 Печать ({printMode === 'a4-spread' ? 'A4' : 'A5×2'})
           </button>
         </div>
       </header>
@@ -165,12 +196,7 @@ export default function DocumentPage() {
             <>
               <DiplomaSpread t={t} calibration={calibration} />
               {/* Скрытые BlankSheet обе стороны — для печати. */}
-              <div className="print-only" aria-hidden>
-                <BlankSheet t={t} side="ru" calibration={false} ghost={false} />
-              </div>
-              <div className="print-only" aria-hidden>
-                <BlankSheet t={t} side="kz" calibration={false} ghost={false} />
-              </div>
+              <PrintArea t={t} printMode={printMode} />
             </>
           )}
           {view === 'blank' && (
@@ -187,12 +213,44 @@ export default function DocumentPage() {
                 calibration={calibration}
                 ghost={blankGhost}
               />
+              {/* В режиме «Бланк A5» печатаем тем же PrintArea, чтобы
+                  пользователь не видел дублирующиеся листы на экране. */}
+              <PrintArea t={t} printMode={printMode} />
             </>
           )}
           {view === 'appendix' && <AppendixSheet t={t} />}
         </div>
       )}
     </section>
+  );
+}
+
+// ─── Скрытая область печати ───────────────────────────────────────
+// На экране не видна (`display: none`), при `window.print()` именно
+// её показывает CSS `@media print { .print-only { display: block } }`.
+// Режим выбирается в шапке вкладки.
+function PrintArea({ t, printMode }) {
+  if (printMode === 'a4-spread') {
+    // Печать поверх типографского бланка: A4 ландшафт, margin 0,
+    // обе стороны (KZ + RU) лежат на странице абсолютными мм-
+    // координатами. Никакого scale и центрирования — координаты
+    // в DEFAULTS_RU/KZ и есть финальные мм на бумаге.
+    return (
+      <div className="print-only print-area-a4" aria-hidden>
+        <style>{'@page { size: A4 landscape; margin: 0; }'}</style>
+        <div className="print-spread-a4">
+          <BlankSheet t={t} side="kz" calibration={false} ghost={false} suppressPageStyle />
+          <BlankSheet t={t} side="ru" calibration={false} ghost={false} suppressPageStyle />
+        </div>
+      </div>
+    );
+  }
+  // 'a5' — две отдельные A5-страницы по очереди.
+  return (
+    <div className="print-only" aria-hidden>
+      <BlankSheet t={t} side="ru" calibration={false} ghost={false} />
+      <BlankSheet t={t} side="kz" calibration={false} ghost={false} suppressPageStyle />
+    </div>
   );
 }
 

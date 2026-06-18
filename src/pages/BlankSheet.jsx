@@ -487,7 +487,9 @@ export function buildBlankCtx(t) {
 }
 
 // ── Компонент ──────────────────────────────────────────────────────
-export default function BlankSheet({ t, side, calibration, ghost }) {
+// Пропс suppressPageStyle нужен в режиме «A4-разворот» — два
+// BlankSheet'а рядом, @page A4 landscape ставит родитель сам.
+export default function BlankSheet({ t, side, calibration, ghost, suppressPageStyle }) {
   const store = useBlankPositions();
   const { positions, offset, overrides } = store;
   const [selectedId, setSelectedId] = useState(null);
@@ -548,7 +550,9 @@ export default function BlankSheet({ t, side, calibration, ghost }) {
   return (
     <>
       {/* Динамическое правило @page применяется только для этого вида. */}
-      <style>{`@page { size: ${A5_W}mm ${A5_H}mm portrait; margin: 0; }`}</style>
+      {!suppressPageStyle && (
+        <style>{`@page { size: ${A5_W}mm ${A5_H}mm portrait; margin: 0; }`}</style>
+      )}
 
       <div
         className={`sheet blank-sheet${ghost ? ' ghost-on' : ''}`}
