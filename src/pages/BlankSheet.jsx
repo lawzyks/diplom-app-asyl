@@ -561,7 +561,7 @@ export default function BlankSheet({ t, side, calibration, ghost, suppressPageSt
     <>
       {/* Динамическое правило @page применяется только для этого вида. */}
       {!suppressPageStyle && (
-        <style>{`@page { size: ${A5_W}mm ${A5_H}mm portrait; margin: 0; }`}</style>
+        <style>{`@page { size: ${A5_W}mm ${A5_H}mm; margin: 0; }`}</style>
       )}
 
       <div

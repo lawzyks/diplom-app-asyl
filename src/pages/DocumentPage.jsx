@@ -252,7 +252,7 @@ function PrintArea({ t, printMode, withScan }) {
     // A4), withScan=false — только текст поверх физического бланка.
     return (
       <div className={`print-only print-area-a4${withScan ? ' with-scan' : ''}`} aria-hidden>
-        <style>{'@page { size: A4 landscape; margin: 0; }'}</style>
+        <style>{'@page { size: 300mm 210mm; margin: 0; }'}</style>
         <div className="print-spread-a4">
           {withScan && <div className="print-bg-scan" aria-hidden />}
           <BlankSheet t={t} side="kz" calibration={false} ghost={false} suppressPageStyle />

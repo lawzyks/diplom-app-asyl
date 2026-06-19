@@ -859,7 +859,7 @@ textarea:focus {
 .print-area-a4 .print-spread-a4 {
   display: flex;
   position: relative;
-  width: 297mm;
+  width: 300mm;
   height: 210mm;
   overflow: hidden;
 }
@@ -882,17 +882,17 @@ textarea:focus {
 /* декоративных полей) совпала с системой логических мм значений.  */
 /* Это инверсия SCAN-констант из BlankSheet.jsx (yScale=0.775,     */
 /* yOffset=22.3%, xScale=0.892, xOffset=5.2%):                     */
-/*   width  = 297 / 0.892 ≈ 333mm,  left = -5.2% × 333 ≈ -17.3mm   */
-/*   height = 210 / 0.775 ≈ 271mm,  top  = -22.3% × 271 ≈ -60.4mm  */
+/*   width  = 300 / 0.892 ≈ 336.32mm,  left = -5.2% × 336.32 ≈ -17.49mm */
+/*   height = 210 / 0.775 ≈ 270.97mm,  top  = -22.3% × 270.97 ≈ -60.43mm */
 .print-area-a4.with-scan .print-bg-scan {
   position: absolute;
   top: 0;
   left: 0;
-  width: 297mm;
+  width: 300mm;
   height: 210mm;
   background-image: url('/diplom-template.jpg');
-  background-size: 333mm 271mm;
-  background-position: -17.3mm -60.4mm;
+  background-size: 336.32mm 270.97mm;
+  background-position: -17.49mm -60.43mm;
   background-repeat: no-repeat;
   z-index: 0;
 }
