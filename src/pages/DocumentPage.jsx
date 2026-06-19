@@ -61,10 +61,11 @@ export default function DocumentPage() {
   //                  (KZ слева, RU справа). Под физический бланк, который
   //                  кладут в принтер разложенным.
   const [printMode, setPrintMode] = useState('a4-spread');
-  // Печатать ли скан бланка как фон (true — для тестовой печати на
-  // чистой бумаге, чтобы видеть как ляжет; false — для финальной
-  // печати поверх физического типографского бланка).
-  const [printWithScan, setPrintWithScan] = useState(false);
+  // Печатать ли скан бланка как фон. true (default) — для тестовой
+  // печати на чистой A4, чтобы видеть готовый диплом. false — для
+  // печати поверх физического типографского бланка, где декор уже
+  // напечатан. Позиции значений в обоих режимах одинаковые.
+  const [printWithScan, setPrintWithScan] = useState(true);
   const t = useTranscript(studentId);
 
   // Печать всегда выводит A5 выбранной стороны: на экране показан
@@ -157,13 +158,14 @@ export default function DocumentPage() {
               </button>
             </div>
           )}
-          {view !== 'appendix' && (
+          {view !== 'appendix' && printMode === 'a4-spread' && (
             <button
               className={`btn${printWithScan ? ' primary' : ''}`}
               onClick={() => setPrintWithScan((v) => !v)}
               title={printWithScan
-                ? 'Скан бланка идёт в печать (тестовая печать на чистой бумаге)'
-                : 'Печать только значений (поверх настоящего типографского бланка)'}
+                ? 'Сейчас печатается с фоном бланка. Нажмите, чтобы печатать только текст (для физического бланка)'
+                : 'Сейчас печатается только текст. Нажмите, чтобы добавить фон бланка'
+              }
             >
               {printWithScan ? '🖼 Фон вкл.' : '🖼 Фон выкл.'}
             </button>
@@ -246,28 +248,21 @@ export default function DocumentPage() {
 // Режим выбирается в шапке вкладки.
 function PrintArea({ t, printMode, withScan }) {
   if (printMode === 'a4-spread') {
-    // Печать поверх типографского бланка: A4 ландшафт, margin 0,
-    // обе стороны (KZ + RU) лежат на странице абсолютными мм-
-    // координатами. Если withScan=true — под значениями ещё едет
-    // скан бланка (для тестовой печати на чистой бумаге).
+    // Печать в A4-ландшафте: withScan=true — со сканом (тест на чистой
+    // A4), withScan=false — только текст поверх физического бланка.
     return (
       <div className={`print-only print-area-a4${withScan ? ' with-scan' : ''}`} aria-hidden>
         <style>{'@page { size: A4 landscape; margin: 0; }'}</style>
         <div className="print-spread-a4">
-          {withScan && (
-            <img
-              src="/diplom-template.jpg"
-              alt=""
-              className="print-bg-scan"
-            />
-          )}
+          {withScan && <div className="print-bg-scan" aria-hidden />}
           <BlankSheet t={t} side="kz" calibration={false} ghost={false} suppressPageStyle />
           <BlankSheet t={t} side="ru" calibration={false} ghost={false} suppressPageStyle />
         </div>
       </div>
     );
   }
-  // 'a5' — две отдельные A5-страницы по очереди.
+  // 'a5' — две отдельные A5-страницы по очереди (без скана: ставят
+  // в принтер сложенный бланк, печатают одну сторону за раз).
   return (
     <div className="print-only" aria-hidden>
       <BlankSheet t={t} side="ru" calibration={false} ghost={false} />
@@ -346,7 +341,7 @@ function AppendixSheet({ t }) {
       </table>
 
       <p className="body-text no-indent">
-        Итоговая аттестация ({s.finalAttestationType}) —{' '}
+        Итоговая аттестация ({s.finalAttestationType || '—'}) —{' '}
         <b>{gradeText(s.finalGrade) || '—'}</b>.
       </p>
       {s.diplomaProjectTheme && (

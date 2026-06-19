@@ -886,11 +886,14 @@ textarea:focus {
 /*   height = 210 / 0.775 ≈ 271mm,  top  = -22.3% × 271 ≈ -60.4mm  */
 .print-area-a4.with-scan .print-bg-scan {
   position: absolute;
-  top: -60.4mm;
-  left: -17.3mm;
-  width: 333mm;
-  height: 271mm;
-  object-fit: fill;
+  top: 0;
+  left: 0;
+  width: 297mm;
+  height: 210mm;
+  background-image: url('/diplom-template.jpg');
+  background-size: 333mm 271mm;
+  background-position: -17.3mm -60.4mm;
+  background-repeat: no-repeat;
   z-index: 0;
 }
 
@@ -1143,6 +1146,66 @@ textarea:focus {
   margin: 0;
 }
 @media print {
+  * {
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  
+  body, .content {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: #000 !important;
+  }
+  
+  /* Обеспечиваем читаемость текста на печати */
+  p, span, div, td, th, li, a {
+    color: #000 !important;
+    background: transparent !important;
+  }
+  
+  /* Специальные элементы остаются с нужным цветом для документов */
+  .sheet, .sheet * {
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  
+  .sheet {
+    color: #000 !important;
+  }
+  
+  .sheet .rk,
+  .sheet .emblem,
+  .sheet .doc-title,
+  .sheet .honors,
+  .sheet .serial,
+  .sheet .reg,
+  .sheet .note,
+  .sheet .inst-name,
+  .sheet .lead,
+  .sheet .fio-line,
+  .sheet .body-text,
+  .sheet .section-title {
+    color: #000 !important;
+  }
+  
+  .sheet table.info td,
+  .sheet table.grades-table th,
+  .sheet table.grades-table td {
+    color: #000 !important;
+    background: #fff !important;
+  }
+  
+  /* Бланк A5: сохраняем синий цвет текста как в оригинале */
+  .sheet.blank-sheet .bf {
+    color: #1a2b6e !important;
+    background: transparent !important;
+  }
+  
   .app-shell {
     display: block;
   }
@@ -1150,7 +1213,8 @@ textarea:focus {
   .no-print,
   .page-head,
   .doc-toolbar,
-  .hint {
+  .hint,
+  .modal-overlay {
     display: none !important;
   }
   .content {

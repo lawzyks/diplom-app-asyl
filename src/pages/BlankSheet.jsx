@@ -169,12 +169,16 @@ function loadOffset() {
     const raw = localStorage.getItem(OFFSET_KEY);
     if (raw) {
       const o = JSON.parse(raw);
-      return { dx: Number(o.dx) || 0, dy: Number(o.dy) || 0 };
+      return {
+        dx: Number(o.dx) || 0,
+        dy: Number(o.dy) || 0,
+        dfs: Number(o.dfs) || 0,
+      };
     }
   } catch {
     /* пусто */
   }
-  return { dx: 0, dy: 0 };
+  return { dx: 0, dy: 0, dfs: 0 };
 }
 
 function persistOffset(offset) {
@@ -288,7 +292,7 @@ export function useBlankPositions() {
       localStorage.removeItem(OFFSET_KEY);
       localStorage.removeItem(OVERRIDES_KEY);
       _positions = clonePositions();
-      _offset = { dx: 0, dy: 0 };
+      _offset = { dx: 0, dy: 0, dfs: 0 };
       _overrides = { ru: {}, kz: {} };
       _notify();
     },
@@ -325,6 +329,7 @@ export function useBlankPositions() {
         _offset = {
           dx: Number(data.offset.dx) || 0,
           dy: Number(data.offset.dy) || 0,
+          dfs: Number(data.offset.dfs) || 0,
         };
       }
       if (data.overrides && typeof data.overrides === 'object') {
@@ -593,7 +598,7 @@ export default function BlankSheet({ t, side, calibration, ghost, suppressPageSt
                 top: `${top}mm`,
                 left: `${left}mm`,
                 width: `${f.w}mm`,
-                fontSize: `${f.fs}px`,
+                fontSize: `${Math.max(4, f.fs + (offset.dfs || 0))}px`,
               }}
               onMouseDown={(e) => startMove(e, id)}
               title={calibration ? f.label : undefined}
@@ -706,7 +711,7 @@ export function DiplomaSpread({ t, calibration }) {
           top: `${toScanY(yMm)}%`,
           left: `${toScanX(xMm + xOffsetMm)}%`,
           width: `${toScanW(f.w)}%`,
-          fontSize: `${f.fs}px`,
+          fontSize: `${Math.max(4, f.fs + (offset.dfs || 0))}px`,
         }}
         title={f.label}
         onMouseDown={(e) => startMove(e, sideKey, id)}
@@ -784,6 +789,21 @@ function DiplomaCalibPanel({ store, selectedId, onSelect, ctx }) {
           <button onClick={() => store.updateOffset({ dx: offset.dx - 0.5 })} title="Влево 0.5">← 0.5</button>
           <button onClick={() => store.updateOffset({ dx: offset.dx + 0.5 })} title="Вправо 0.5">→ 0.5</button>
           <button onClick={() => store.updateOffset({ dx: 0, dy: 0 })} title="Сброс сдвига">⟲ 0</button>
+        </div>
+        <div className="calib-grid" style={{ marginTop: '8px' }}>
+          <label>
+            кегль Δ, px
+            <input
+              type="number" step="0.5" min="-20" max="20"
+              value={Number(offset.dfs || 0).toFixed(1)}
+              onChange={(e) => store.updateOffset({ dfs: clamp(num(e.target.value), -20, 20) })}
+            />
+          </label>
+        </div>
+        <div className="calib-nudge" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+          <button onClick={() => store.updateOffset({ dfs: clamp((offset.dfs || 0) - 0.5, -20, 20) })} title="Все надписи −0.5">A− все</button>
+          <button onClick={() => store.updateOffset({ dfs: clamp((offset.dfs || 0) + 0.5, -20, 20) })} title="Все надписи +0.5">A+ все</button>
+          <button onClick={() => store.updateOffset({ dfs: 0 })} title="Глобальную дельту шрифта в ноль">A↺ все</button>
         </div>
       </div>
 
@@ -1066,6 +1086,21 @@ function BlankCalibPanel({
           <button onClick={() => onOffset({ dx: offset.dx - 0.5 })} title="Все поля влево">← 0.5</button>
           <button onClick={() => onOffset({ dx: offset.dx + 0.5 })} title="Все поля вправо">→ 0.5</button>
           <button onClick={() => onOffset({ dx: 0, dy: 0 })} title="Без сдвига">⟲ 0</button>
+        </div>
+        <div className="calib-grid" style={{ marginTop: '8px' }}>
+          <label>
+            кегль Δ, px
+            <input
+              type="number" step="0.5" min="-20" max="20"
+              value={Number(offset.dfs || 0).toFixed(1)}
+              onChange={(e) => onOffset({ dfs: clamp(numVal(e.target.value), -20, 20) })}
+            />
+          </label>
+        </div>
+        <div className="calib-nudge" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+          <button onClick={() => onOffset({ dfs: clamp((offset.dfs || 0) - 0.5, -20, 20) })} title="Все надписи −0.5">A− все</button>
+          <button onClick={() => onOffset({ dfs: clamp((offset.dfs || 0) + 0.5, -20, 20) })} title="Все надписи +0.5">A+ все</button>
+          <button onClick={() => onOffset({ dfs: 0 })} title="Глобальную дельту шрифта в ноль">A↺ все</button>
         </div>
       </div>
 
