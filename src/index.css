@@ -825,6 +825,20 @@ textarea:focus {
   text-decoration: line-through;
 }
 
+.print-shift-ctl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px 10px;
+  background: #fff;
+}
+.print-shift-ctl input[type='number'] {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
 .print-only { display: none; }
 @media print {
   .print-only { display: block !important; }
@@ -850,6 +864,12 @@ textarea:focus {
   padding: 0;
   overflow: hidden;
   background: #fff;
+  /* Компенсация механического сдвига захвата принтером.
+     Двигает ВЕСЬ разворот (фон + поля) относительно листа.
+     Значение приходит inline-style'ом из DocumentPage.
+     Положительное X сдвигает вправо, Y — вниз. */
+  transform: translate(var(--print-shift-x, 0mm), var(--print-shift-y, 0mm));
+  transform-origin: top left;
 }
 .print-area-a4 .print-spread-a4 .print-side {
   position: relative;
@@ -877,6 +897,53 @@ textarea:focus {
   page-break-inside: avoid;
   break-inside: avoid;
 }
+/* ── Позиционирование разворота 210×150 на физическом листе ──────
+   Контент в .print-spread-a4 всегда 210×150 мм. Слой-обёртка .print-area-a4
+   занимает ВЕСЬ физический лист (@page), и через CSS Grid размещает спред
+   там, где реально лежит бланк в принтере.
+   `layout-*` приходит из DocumentPage в соответствии с выбором драйвера. */
+.print-area-a4 {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+/* Custom paper size 210×150 в драйвере — @page точно совпадает с
+   бумагой, никакого сдвига не нужно (default). */
+.print-area-a4.layout-custom-210x150 {
+  width: 210mm;
+  height: 150mm;
+}
+/* A4 portrait в драйвере (210×297). Бланк подаётся короткой стороной
+   вперёд и физически лежит в ВЕРХНИХ 150мм листа. Контент 210×150
+   ширина-в-ширину с A4 (210мм), вертикально прижат к верху. */
+.print-area-a4.layout-a4-portrait {
+  width: 210mm;
+  height: 297mm;
+  position: relative;
+}
+.print-area-a4.layout-a4-portrait .print-spread-a4 {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+/* A4 landscape в драйвере (297×210). Бланк прижат к ПРАВОЙ
+   направляющей лотка и лежит в правой 210-мм-полосе листа.
+   Контент 210×150 ставим в правый край, по вертикали — по центру
+   доступной 210мм высоты (можно подкорректировать --print-shift-y). */
+.print-area-a4.layout-a4-landscape-right {
+  width: 297mm;
+  height: 210mm;
+  position: relative;
+}
+.print-area-a4.layout-a4-landscape-right .print-spread-a4 {
+  position: absolute;
+  top: 30mm;            /* (210 - 150) / 2 = 30мм пустоты сверху и снизу */
+  left: 87mm;           /* 297 - 210 = 87мм пустоты слева, контент справа */
+}
+/* Фон-скан (.print-bg-scan) уже position: absolute с inset:0 внутри
+   .print-spread-a4 — он автоматически следует за спредом куда бы тот
+   ни был сдвинут layout-классом. Дополнительных правил не нужно. */
+
 .print-area-a4.with-scan .print-bg-scan {
   position: absolute;
   inset: 0;

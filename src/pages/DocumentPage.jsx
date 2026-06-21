@@ -58,6 +58,43 @@ export default function DocumentPage() {
   const [printMode, setPrintMode] = useState('a4-spread');
 
   const [printWithScan, setPrintWithScan] = useState(true);
+  // Сдвиг всего разворота относительно физического листа — компенсация
+  // механического захвата принтером (бланк уезжает на 2-5 мм при подаче).
+  // Сохраняется в localStorage, чтобы пережить перезагрузку и не вводить
+  // заново после каждой настройки.
+  const [printShiftX, setPrintShiftX] = useState(() => {
+    const v = Number(localStorage.getItem('apc_print_shift_x'));
+    return Number.isFinite(v) ? v : 0;
+  });
+  const [printShiftY, setPrintShiftY] = useState(() => {
+    const v = Number(localStorage.getItem('apc_print_shift_y'));
+    return Number.isFinite(v) ? v : 0;
+  });
+  const updatePrintShiftX = (v) => {
+    setPrintShiftX(v);
+    localStorage.setItem('apc_print_shift_x', String(v));
+  };
+  const updatePrintShiftY = (v) => {
+    setPrintShiftY(v);
+    localStorage.setItem('apc_print_shift_y', String(v));
+  };
+  // Какой формат бумаги стоит в драйвере принтера. Это ключевой выбор:
+  //  · 'custom-210x150' — драйвер настроен на custom 210×150 (точно бланк).
+  //    Тогда @page=210×150, никаких уловок.
+  //  · 'a4-portrait' — стандартный A4 portrait (210×297). Контент 210×150
+  //    кладётся в ВЕРХНЮЮ часть листа (там, куда подаётся бланк короткой
+  //    стороной вперёд, прижатый к верхней направляющей).
+  //  · 'a4-landscape-right' — A4 landscape (297×210). Контент кладётся в
+  //    ПРАВУЮ часть листа, т.к. пользователь прижимает бланк к правой
+  //    направляющей лотка. Это решает «Chromium центрирует @page» —
+  //    мы явно размещаем 210×150 в правой 210-мм-полосе A4 landscape.
+  const [paperLayout, setPaperLayout] = useState(() => {
+    return localStorage.getItem('apc_paper_layout') || 'a4-landscape-right';
+  });
+  const updatePaperLayout = (v) => {
+    setPaperLayout(v);
+    localStorage.setItem('apc_paper_layout', v);
+  };
   const t = useTranscript(studentId);
 
 
@@ -160,6 +197,70 @@ export default function DocumentPage() {
               {printWithScan ? '🖼 Фон вкл.' : '🖼 Фон выкл.'}
             </button>
           )}
+          {view !== 'appendix' && printMode === 'a4-spread' && (
+            <div
+              className="seg"
+              title="Какой формат бумаги выбран в драйвере принтера. От этого зависит, как Chromium размещает контент на физическом листе."
+            >
+              <button
+                className={paperLayout === 'a4-landscape-right' ? 'on' : ''}
+                onClick={() => updatePaperLayout('a4-landscape-right')}
+                title="A4 landscape (297×210мм) в драйвере, бланк прижат к правой направляющей лотка. Контент 210×150 печатается в правой части листа."
+              >
+                A4 → справа
+              </button>
+              <button
+                className={paperLayout === 'a4-portrait' ? 'on' : ''}
+                onClick={() => updatePaperLayout('a4-portrait')}
+                title="A4 portrait (210×297мм) в драйвере, бланк подаётся короткой стороной вверху лотка. Контент 210×150 печатается в верхней части листа."
+              >
+                A4 ↑ вверху
+              </button>
+              <button
+                className={paperLayout === 'custom-210x150' ? 'on' : ''}
+                onClick={() => updatePaperLayout('custom-210x150')}
+                title="В драйвере создан Custom paper size 210×150мм. @page точно совпадает с бумагой — без сдвигов."
+              >
+                Custom 210×150
+              </button>
+            </div>
+          )}
+          {view !== 'appendix' && printMode === 'a4-spread' && (
+            <div
+              className="print-shift-ctl"
+              title="Двигает ВЕСЬ разворот (фон+поля) относительно физического листа. Используйте для компенсации механического захвата принтером: если бланк уезжает влево/вверх — задайте положительные X/Y, чтобы напечатать правее/ниже."
+            >
+              <span className="muted" style={{ fontSize: '12px' }}>↔ Сдвиг, мм:</span>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>X</span>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={Number(printShiftX).toFixed(1)}
+                  onChange={(e) => updatePrintShiftX(parseFloat(e.target.value) || 0)}
+                  style={{ width: '64px', padding: '5px 7px', fontSize: '12px' }}
+                />
+              </label>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--muted)' }}>Y</span>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={Number(printShiftY).toFixed(1)}
+                  onChange={(e) => updatePrintShiftY(parseFloat(e.target.value) || 0)}
+                  style={{ width: '64px', padding: '5px 7px', fontSize: '12px' }}
+                />
+              </label>
+              {(printShiftX !== 0 || printShiftY !== 0) && (
+                <button
+                  className="btn"
+                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                  onClick={() => { updatePrintShiftX(0); updatePrintShiftY(0); }}
+                  title="Обнулить сдвиг разворота"
+                >⟲</button>
+              )}
+            </div>
+          )}
           <button
             className="btn primary"
             disabled={!t}
@@ -203,7 +304,14 @@ export default function DocumentPage() {
             <>
               <DiplomaSpread t={t} calibration={calibration} />
               {}
-              <PrintArea t={t} printMode={printMode} withScan={printWithScan} />
+              <PrintArea
+                t={t}
+                printMode={printMode}
+                withScan={printWithScan}
+                shiftX={printShiftX}
+                shiftY={printShiftY}
+                paperLayout={paperLayout}
+              />
             </>
           )}
           {view === 'blank' && (
@@ -220,8 +328,15 @@ export default function DocumentPage() {
                 calibration={calibration}
                 ghost={blankGhost}
               />
-              
-              <PrintArea t={t} printMode={printMode} withScan={printWithScan} />
+
+              <PrintArea
+                t={t}
+                printMode={printMode}
+                withScan={printWithScan}
+                shiftX={printShiftX}
+                shiftY={printShiftY}
+                paperLayout={paperLayout}
+              />
             </>
           )}
           {view === 'appendix' && <AppendixSheet t={t} />}
@@ -231,14 +346,31 @@ export default function DocumentPage() {
   );
 }
 
-function PrintArea({ t, printMode, withScan }) {
+function PrintArea({ t, printMode, withScan, shiftX = 0, shiftY = 0, paperLayout = 'a4-landscape-right' }) {
   if (printMode === 'a4-spread') {
+    // Размер @page = физический размер бумаги в драйвере принтера.
+    // Без этого Chromium центрирует @page внутри физического листа, и
+    // контент 210×150 уезжает мимо бланка, лежащего у правой направляющей.
+    // CSS-переменные --print-shift-x/y — это дополнительная микро-юстировка
+    // (компенсация механического сдвига захвата), применяется поверх
+    // позиционирования по layout-классу.
+    const shiftStyle = {
+      '--print-shift-x': `${Number(shiftX) || 0}mm`,
+      '--print-shift-y': `${Number(shiftY) || 0}mm`,
+    };
+    const pageSize =
+      paperLayout === 'a4-portrait' ? '210mm 297mm'
+      : paperLayout === 'a4-landscape-right' ? '297mm 210mm'
+      : '210mm 150mm';
     return (
-      <div className={`print-only print-area-a4${withScan ? ' with-scan' : ''}`} aria-hidden>
-        {/* Жёстко 210×150 landscape — государственный стандарт вкладыша.
-            Две .print-side по 105мм держат бланки в рамках листа. */}
-        <style>{'@page { size: 210mm 150mm; margin: 0; }'}</style>
-        <div className="print-spread-a4">
+      <div
+        className={`print-only print-area-a4 layout-${paperLayout}${withScan ? ' with-scan' : ''}`}
+        aria-hidden
+      >
+        {/* @page подстраивается под физическую бумагу. Контент 210×150 mm
+            позиционируется CSS-классом layout-* (см. index.css). */}
+        <style>{`@page { size: ${pageSize}; margin: 0; }`}</style>
+        <div className="print-spread-a4" style={shiftStyle}>
           {withScan && <div className="print-bg-scan" aria-hidden />}
           <div className="print-side">
             <BlankSheet t={t} side="kz" calibration={false} ghost={false} suppressPageStyle />
