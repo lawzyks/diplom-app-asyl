@@ -51,26 +51,16 @@ export default function DocumentPage() {
   useDB();
   const students = db.list('students');
   const [studentId, setStudentId] = useState(students[0]?.id || '');
-  const [view, setView] = useState('diploma'); // diploma | appendix | blank
+  const [view, setView] = useState('diploma'); 
   const [blankGhost, setBlankGhost] = useState(true);
   const [calibration, setCalibration] = useState(false);
-  // Режим печати:
-  //   'a5'        — две страницы A5 портрет (диплом подаётся сложенным,
-  //                  печатается одна сторона за раз).
-  //   'a4-spread' — одна страница A4 ландшафт с двумя сторонами рядом
-  //                  (KZ слева, RU справа). Под физический бланк, который
-  //                  кладут в принтер разложенным.
+ 
   const [printMode, setPrintMode] = useState('a4-spread');
-  // Печатать ли скан бланка как фон. true (default) — для тестовой
-  // печати на чистой A4, чтобы видеть готовый диплом. false — для
-  // печати поверх физического типографского бланка, где декор уже
-  // напечатан. Позиции значений в обоих режимах одинаковые.
+
   const [printWithScan, setPrintWithScan] = useState(true);
   const t = useTranscript(studentId);
 
-  // Печать всегда выводит A5 выбранной стороны: на экране показан
-  // скан-превью, а под капотом в .print-only висит BlankSheet — при
-  // window.print() @media print прячет скан и показывает A5-страницу.
+
   const handlePrint = () => {
     if (!t) return;
     window.print();
@@ -212,7 +202,7 @@ export default function DocumentPage() {
           {view === 'diploma' && (
             <>
               <DiplomaSpread t={t} calibration={calibration} />
-              {/* Скрытые BlankSheet обе стороны — для печати. */}
+              {}
               <PrintArea t={t} printMode={printMode} withScan={printWithScan} />
             </>
           )}
@@ -230,8 +220,7 @@ export default function DocumentPage() {
                 calibration={calibration}
                 ghost={blankGhost}
               />
-              {/* В режиме «Бланк A5» печатаем тем же PrintArea, чтобы
-                  пользователь не видел дублирующиеся листы на экране. */}
+              
               <PrintArea t={t} printMode={printMode} withScan={printWithScan} />
             </>
           )}
@@ -242,27 +231,26 @@ export default function DocumentPage() {
   );
 }
 
-// ─── Скрытая область печати ───────────────────────────────────────
-// На экране не видна (`display: none`), при `window.print()` именно
-// её показывает CSS `@media print { .print-only { display: block } }`.
-// Режим выбирается в шапке вкладки.
 function PrintArea({ t, printMode, withScan }) {
   if (printMode === 'a4-spread') {
-    // Печать в A4-ландшафте: withScan=true — со сканом (тест на чистой
-    // A4), withScan=false — только текст поверх физического бланка.
     return (
       <div className={`print-only print-area-a4${withScan ? ' with-scan' : ''}`} aria-hidden>
-        <style>{'@page { size: 300mm 210mm; margin: 0; }'}</style>
+        {/* Жёстко 210×150 landscape — государственный стандарт вкладыша.
+            Две .print-side по 105мм держат бланки в рамках листа. */}
+        <style>{'@page { size: 210mm 150mm; margin: 0; }'}</style>
         <div className="print-spread-a4">
           {withScan && <div className="print-bg-scan" aria-hidden />}
-          <BlankSheet t={t} side="kz" calibration={false} ghost={false} suppressPageStyle />
-          <BlankSheet t={t} side="ru" calibration={false} ghost={false} suppressPageStyle />
+          <div className="print-side">
+            <BlankSheet t={t} side="kz" calibration={false} ghost={false} suppressPageStyle />
+          </div>
+          <div className="print-side">
+            <BlankSheet t={t} side="ru" calibration={false} ghost={false} suppressPageStyle />
+          </div>
         </div>
       </div>
     );
   }
-  // 'a5' — две отдельные A5-страницы по очереди (без скана: ставят
-  // в принтер сложенный бланк, печатают одну сторону за раз).
+
   return (
     <div className="print-only" aria-hidden>
       <BlankSheet t={t} side="ru" calibration={false} ghost={false} />
@@ -271,7 +259,6 @@ function PrintArea({ t, printMode, withScan }) {
   );
 }
 
-// ─── Приложение к диплому ─────────────────────────────────────────
 function AppendixSheet({ t }) {
   const { student: s, institution: inst, specialty, qualification } = t;
   const InfoRow = ({ k, v }) => (

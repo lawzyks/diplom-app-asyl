@@ -47,7 +47,6 @@ a:hover {
   text-decoration: underline;
 }
 
-/* ---------- Каркас приложения ---------- */
 .app-shell {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -186,7 +185,6 @@ a:hover {
   .developer-credit { display: none !important; }
 }
 
-/* ---------- Страницы ---------- */
 .page {
   max-width: 1080px;
 }
@@ -270,7 +268,6 @@ a:hover {
   line-height: 1.9;
 }
 
-/* ---------- Таблицы ---------- */
 .table-wrap {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -316,7 +313,6 @@ a:hover {
   color: var(--muted);
 }
 
-/* ---------- Кнопки и поля ---------- */
 .btn {
   border: 1px solid var(--line);
   background: #fff;
@@ -397,7 +393,6 @@ textarea:focus {
   color: #fff;
 }
 
-/* ---------- Формы ---------- */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -452,7 +447,6 @@ textarea:focus {
   font-size: 13px;
 }
 
-/* ---------- Модальное окно ---------- */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -494,7 +488,6 @@ textarea:focus {
   color: var(--muted);
 }
 
-/* ---------- Ввод оценок ---------- */
 .grade-stats {
   display: flex;
   gap: 14px;
@@ -516,7 +509,6 @@ textarea:focus {
   font-size: 18px;
 }
 
-/* ---------- Печатный документ ---------- */
 .printable {
   display: flex;
   justify-content: center;
@@ -532,7 +524,6 @@ textarea:focus {
   font-family: 'Times New Roman', Georgia, serif;
   font-size: 13px;
   line-height: 1.55;
-  /* Корректная типографика для печати: переносы и выравнивание */
   -webkit-font-smoothing: antialiased;
   word-spacing: 0.02em;
   hyphens: auto;
@@ -699,10 +690,6 @@ textarea:focus {
   break-inside: avoid;
 }
 
-/* Превью: скан настоящего бланка на всю ширину контейнера, значения */
-/* накладываются абсолютным позиционированием в % (см. transform SCAN */
-/* в BlankSheet.jsx — он мапит мм-координаты в проценты скана с       */
-/* учётом декоративных полей сверху и по бокам).                     */
 .diploma-preview {
   position: relative;
   width: min(900px, 100%);
@@ -758,8 +745,6 @@ textarea:focus {
   background: rgba(255, 180, 60, 0.6);
   z-index: 5;
 }
-/* Скрытое поле: при калибровке полупрозрачное и с пунктиром, чтобы
-   можно было выбрать и вернуть. На печать не идёт.                  */
 .diploma-preview-overlay .sp-hidden {
   opacity: 0.25;
   outline: 1px dashed rgba(170, 170, 170, 0.8);
@@ -771,8 +756,6 @@ textarea:focus {
   text-decoration: line-through;
 }
 
-/* Цветная кнопочная палитра в калибровке: однозначно отделяем
-   опасные действия (красный) от служебных и сейв-операций.       */
 .calibration-panel .calib-btn {
   border: 1px solid var(--line);
   background: #fff;
@@ -837,64 +820,74 @@ textarea:focus {
   margin: 12px 0 6px;
 }
 
-/* Скрытые поля в списке — серые с зачёркиванием */
 .calibration-panel .calib-list li.hidden-field button {
   color: #9ca3af;
   text-decoration: line-through;
 }
 
-/* Скрытый BlankSheet под скан-превью — нужен только для печати. */
 .print-only { display: none; }
 @media print {
   .print-only { display: block !important; }
   .diploma-preview { display: none !important; }
-  /* В режиме «Бланк A5» на экране уже видны BlankSheet'ы — чтобы они
-     не уехали в принтер вторым/третьим экземпляром, прячем их при   */
-  /*  печати. Печатает только .print-only.                            */
   .printable-blank > .sheet.blank-sheet { display: none !important; }
 }
 
-/* A4-разворот: KZ слева, RU справа, без скейла и центрирования.    */
-/* Координаты внутри BlankSheet и есть финальные мм на A4-ландшафте.*/
+/* ── Разворот вкладыша диплома: строго 210×150 мм landscape ──────
+   Государственный стандарт. Лист делится 1:1 на KZ (слева) и RU (справа),
+   по 105 мм на сторону. Внутри каждой половины лежит .sheet.blank-sheet
+   с координатами, откалиброванными под 150×210 портрет, поэтому он
+   масштабируется transform: scale(0.7), чтобы 150 мм → 105 мм по ширине.
+   Никаких 300×210, A4 и A5 — только эта геометрия. */
 .print-area-a4 .print-spread-a4 {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-start;
   position: relative;
-  width: 300mm;
-  height: 210mm;
+  width: 210mm;
+  height: 150mm;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
+  background: #fff;
 }
-.print-area-a4 .print-spread-a4 > .sheet.blank-sheet {
+.print-area-a4 .print-spread-a4 .print-side {
+  position: relative;
+  flex: 0 0 105mm;
+  width: 105mm;
+  height: 150mm;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+.print-area-a4 .print-spread-a4 .print-side > .sheet.blank-sheet {
   position: relative;
   z-index: 1;
+  display: block;
   background: transparent;
-  page-break-after: avoid;
-  break-after: avoid;
   box-shadow: none !important;
   margin: 0 !important;
+  padding: 0 !important;
   width: 150mm !important;
   height: 210mm !important;
+  transform: scale(0.7);
+  transform-origin: top left;
+  page-break-after: avoid;
+  break-after: avoid;
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
-/* Скан бланка как подложка под значения (включается тумблером     */
-/* «Фон вкл.», для тестовой печати на чистой бумаге). На печать на */
-/* настоящий бланк фон не нужен — там декор типографский.          */
-/*                                                                  */
-/* Размер и позиция скана подобраны так, чтобы его форма (внутри   */
-/* декоративных полей) совпала с системой логических мм значений.  */
-/* Это инверсия SCAN-констант из BlankSheet.jsx (yScale=0.775,     */
-/* yOffset=22.3%, xScale=0.892, xOffset=5.2%):                     */
-/*   width  = 300 / 0.892 ≈ 336.32mm,  left = -5.2% × 336.32 ≈ -17.49mm */
-/*   height = 210 / 0.775 ≈ 270.97mm,  top  = -22.3% × 270.97 ≈ -60.43mm */
 .print-area-a4.with-scan .print-bg-scan {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 300mm;
-  height: 210mm;
+  inset: 0;
+  width: 210mm;
+  height: 150mm;
   background-image: url('/diplom-template.jpg');
-  background-size: 336.32mm 270.97mm;
-  background-position: -17.49mm -60.43mm;
+  background-size: 210mm 150mm;
+  background-position: 0 0;
   background-repeat: no-repeat;
   z-index: 0;
+  pointer-events: none;
 }
 
 .calibration-panel {
@@ -1037,11 +1030,6 @@ textarea:focus {
   height: 18px;
 }
 
-/* ---------- Печать на бланке A5 (150 × 210 мм) ---------- */
-/* Координаты — в МИЛЛИМЕТРАХ от верхнего левого угла листа.       */
-/* Никакого центрирования, никакого «fit to page». Размер @page    */
-/* и блока совпадают, чтобы попасть точно на пред-печатные линии   */
-/* физического бланка диплома.                                     */
 .sheet.blank-sheet {
   position: relative;
   width: 150mm;
@@ -1049,7 +1037,7 @@ textarea:focus {
   padding: 0;
   margin: 0;
   background: #fff;
-  color: #1a2b6e;            /* «синие чернила» */
+  color: #1a2b6e;
   font-family: 'Times New Roman', Times, serif;
   box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(0, 0, 0, 0.12);
   overflow: hidden;
@@ -1062,7 +1050,6 @@ textarea:focus {
 
 .sheet.blank-sheet .bf {
   position: absolute;
-  /* НЕТ transform: translateY — координата y задаёт верхнюю кромку текста. */
   font-family: 'Times New Roman', Times, serif;
   font-size: 11px;
   line-height: 1.1;
@@ -1075,7 +1062,6 @@ textarea:focus {
 .sheet.blank-sheet .bf-bold {
   font-weight: 700;
 }
-/* Длинные поля (специальность, квалификация) — разрешаем перенос */
 .sheet.blank-sheet .bf-multi {
   white-space: normal;
   overflow: visible;
@@ -1083,7 +1069,6 @@ textarea:focus {
   line-height: 1.15;
 }
 
-/* «Призрак» формы — только на экране, помогает визуально совместить */
 .sheet.blank-sheet .bf-ghost {
   position: absolute;
   inset: 0;
@@ -1097,7 +1082,6 @@ textarea:focus {
   margin: 0;
 }
 
-/* Линейка по краям листа в режиме калибровки */
 .sheet.blank-sheet .bf-ruler {
   position: absolute;
   inset: 0;
@@ -1123,7 +1107,6 @@ textarea:focus {
   padding-top: 0;
 }
 
-/* Режим калибровки: поля можно тянуть */
 .sheet.blank-sheet .bf-edit {
   outline: 1px dashed rgba(13, 110, 253, 0.6);
   background: rgba(255, 235, 100, 0.25);
@@ -1140,14 +1123,14 @@ textarea:focus {
   z-index: 5;
 }
 
-/* ---------- Печать ---------- */
+/* Государственный стандарт вкладыша диплома: 210×150 мм landscape.
+   Никаких A4/A5 — единственная константа печати в проекте. */
 @page {
-  size: A4 portrait;
+  size: 210mm 150mm;
   margin: 0;
 }
 @media print {
   * {
-    color-adjust: exact !important;
     print-color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
   }
@@ -1161,15 +1144,13 @@ textarea:focus {
     color: #000 !important;
   }
   
-  /* Обеспечиваем читаемость текста на печати */
   p, span, div, td, th, li, a {
     color: #000 !important;
     background: transparent !important;
   }
   
-  /* Специальные элементы остаются с нужным цветом для документов */
   .sheet, .sheet * {
-    color-adjust: exact !important;
+    color-scheme: exact !important;
     print-color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
   }
@@ -1200,7 +1181,6 @@ textarea:focus {
     background: #fff !important;
   }
   
-  /* Бланк A5: сохраняем синий цвет текста как в оригинале */
   .sheet.blank-sheet .bf {
     color: #1a2b6e !important;
     background: transparent !important;
@@ -1238,12 +1218,12 @@ textarea:focus {
     width: 195mm;
     margin: 5mm auto;
   }
-  /* Бланк A5: страница 150×210, без рамок и подсказок */
+  /* На экране бланк остаётся 150×210 портрет (так удобнее калибровать
+     по мм-сетке), но на печать .print-side выше уже даёт 105×150
+     с transform: scale(0.7). Здесь только убираем тень/поля. */
   .sheet.blank-sheet {
     box-shadow: none !important;
     margin: 0 !important;
-    width: 150mm !important;
-    height: 210mm !important;
     overflow: visible;
   }
   .sheet.blank-sheet .bf-ghost,

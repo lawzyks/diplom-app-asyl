@@ -6,7 +6,7 @@
     useDB();
     const students = db.list('students');
     const [studentId, setStudentId] = useState(students[0]?.id || '');
-    const [draft, setDraft] = useState({}); // disciplineId -> value
+    const [draft, setDraft] = useState({}); 
     const [saved, setSaved] = useState(false);
 
     const student = studentId ? db.get('students', studentId) : null;

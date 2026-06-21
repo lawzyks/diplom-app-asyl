@@ -7,7 +7,7 @@ const specialtyOptions = () =>
     .list('specialties')
     .map((s) => ({ value: s.id, label: `${s.code} · ${s.name}` }));
 
-// Квалификации фильтруются по выбранной специальности студента
+
 const qualificationOptions = (data) =>
   db
     .list('qualifications', { specialtyId: data.specialtyId })
