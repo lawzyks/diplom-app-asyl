@@ -532,10 +532,9 @@ export default function BlankSheet({ t, side, calibration, ghost, suppressPageSt
 
   return (
     <>
-      {/* Единственный размер листа в проекте — 210×150 мм landscape
-          (стандарт вкладыша диплома). В режиме «A4 разворот» правило
-          @page задаёт PrintArea, поэтому здесь — только когда мы рендерим
-          одиночный бланк (suppressPageStyle === false). */}
+      {/* Размер листа для печати — 210×150 landscape (стандарт вкладыша).
+          В режиме «A4 разворот» это правило ставит PrintArea, здесь —
+          только для одиночной печати бланка. */}
       {!suppressPageStyle && (
         <style>{`@page { size: 210mm 150mm; margin: 0; }`}</style>
       )}

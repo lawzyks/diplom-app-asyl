@@ -825,20 +825,6 @@ textarea:focus {
   text-decoration: line-through;
 }
 
-.print-shift-ctl {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 4px 10px;
-  background: #fff;
-}
-.print-shift-ctl input[type='number'] {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-}
-
 .print-only { display: none; }
 @media print {
   .print-only { display: block !important; }
@@ -846,104 +832,37 @@ textarea:focus {
   .printable-blank > .sheet.blank-sheet { display: none !important; }
 }
 
-/* ── Разворот вкладыша диплома: строго 210×150 мм landscape ──────
-   Государственный стандарт. Лист делится 1:1 на KZ (слева) и RU (справа),
-   по 105 мм на сторону. Внутри каждой половины лежит .sheet.blank-sheet
-   с координатами, откалиброванными под 150×210 портрет, поэтому он
-   масштабируется transform: scale(0.7), чтобы 150 мм → 105 мм по ширине.
-   Никаких 300×210, A4 и A5 — только эта геометрия. */
+/* Печать вкладыша диплома 210×150 мм landscape (государственный стандарт).
+   Лист делится пополам: KZ слева (105×150), RU справа (105×150).
+   Координаты в BlankSheet откалиброваны под 150×210 portrait per side —
+   поэтому каждый бланк масштабируется transform: scale(0.7), чтобы
+   150 мм по ширине → 105 мм. */
 .print-area-a4 .print-spread-a4 {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: flex-start;
   position: relative;
   width: 210mm;
   height: 150mm;
-  margin: 0;
-  padding: 0;
   overflow: hidden;
-  background: #fff;
-  /* Компенсация механического сдвига захвата принтером.
-     Двигает ВЕСЬ разворот (фон + поля) относительно листа.
-     Значение приходит inline-style'ом из DocumentPage.
-     Положительное X сдвигает вправо, Y — вниз. */
-  transform: translate(var(--print-shift-x, 0mm), var(--print-shift-y, 0mm));
-  transform-origin: top left;
 }
-.print-area-a4 .print-spread-a4 .print-side {
-  position: relative;
-  flex: 0 0 105mm;
-  width: 105mm;
-  height: 150mm;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-}
-.print-area-a4 .print-spread-a4 .print-side > .sheet.blank-sheet {
-  position: relative;
+.print-area-a4 .print-spread-a4 > .sheet.blank-sheet {
+  position: absolute;
+  top: 0;
+  left: 0;
   z-index: 1;
-  display: block;
-  background: transparent;
-  box-shadow: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
   width: 150mm !important;
   height: 210mm !important;
   transform: scale(0.7);
   transform-origin: top left;
+  background: transparent;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
   page-break-after: avoid;
   break-after: avoid;
-  page-break-inside: avoid;
-  break-inside: avoid;
 }
-/* ── Позиционирование разворота 210×150 на физическом листе ──────
-   Контент в .print-spread-a4 всегда 210×150 мм. Слой-обёртка .print-area-a4
-   занимает ВЕСЬ физический лист (@page), и через CSS Grid размещает спред
-   там, где реально лежит бланк в принтере.
-   `layout-*` приходит из DocumentPage в соответствии с выбором драйвера. */
-.print-area-a4 {
-  display: block;
-  margin: 0;
-  padding: 0;
+/* Второй бланк (RU, идёт следом за KZ) — в правую половину 105мм. */
+.print-area-a4 .print-spread-a4 > .sheet.blank-sheet ~ .sheet.blank-sheet {
+  left: 105mm;
 }
-/* Custom paper size 210×150 в драйвере — @page точно совпадает с
-   бумагой, никакого сдвига не нужно (default). */
-.print-area-a4.layout-custom-210x150 {
-  width: 210mm;
-  height: 150mm;
-}
-/* A4 portrait в драйвере (210×297). Бланк подаётся короткой стороной
-   вперёд и физически лежит в ВЕРХНИХ 150мм листа. Контент 210×150
-   ширина-в-ширину с A4 (210мм), вертикально прижат к верху. */
-.print-area-a4.layout-a4-portrait {
-  width: 210mm;
-  height: 297mm;
-  position: relative;
-}
-.print-area-a4.layout-a4-portrait .print-spread-a4 {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-/* A4 landscape в драйвере (297×210). Бланк прижат к ПРАВОЙ
-   направляющей лотка и лежит в правой 210-мм-полосе листа.
-   Контент 210×150 ставим в правый край, по вертикали — по центру
-   доступной 210мм высоты (можно подкорректировать --print-shift-y). */
-.print-area-a4.layout-a4-landscape-right {
-  width: 297mm;
-  height: 210mm;
-  position: relative;
-}
-.print-area-a4.layout-a4-landscape-right .print-spread-a4 {
-  position: absolute;
-  top: 30mm;            /* (210 - 150) / 2 = 30мм пустоты сверху и снизу */
-  left: 87mm;           /* 297 - 210 = 87мм пустоты слева, контент справа */
-}
-/* Фон-скан (.print-bg-scan) уже position: absolute с inset:0 внутри
-   .print-spread-a4 — он автоматически следует за спредом куда бы тот
-   ни был сдвинут layout-классом. Дополнительных правил не нужно. */
-
 .print-area-a4.with-scan .print-bg-scan {
   position: absolute;
   inset: 0;
@@ -1190,10 +1109,8 @@ textarea:focus {
   z-index: 5;
 }
 
-/* Государственный стандарт вкладыша диплома: 210×150 мм landscape.
-   Никаких A4/A5 — единственная константа печати в проекте. */
 @page {
-  size: 210mm 150mm;
+  size: A4 portrait;
   margin: 0;
 }
 @media print {
@@ -1285,9 +1202,9 @@ textarea:focus {
     width: 195mm;
     margin: 5mm auto;
   }
-  /* На экране бланк остаётся 150×210 портрет (так удобнее калибровать
-     по мм-сетке), но на печать .print-side выше уже даёт 105×150
-     с transform: scale(0.7). Здесь только убираем тень/поля. */
+  /* Размер бланка (150×210) задаётся inline-стилем в JSX и правилом
+     для .print-area-a4 .print-spread-a4 > .sheet.blank-sheet (где он
+     уже 150×210 с scale 0.7 = 105×147). Здесь только убираем тень и поля. */
   .sheet.blank-sheet {
     box-shadow: none !important;
     margin: 0 !important;
