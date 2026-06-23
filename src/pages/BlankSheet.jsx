@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useReducer, useState } from 'react';
 
-const A5_W = 150;
-const A5_H = 210;
+// Физический размер ПОЛОВИНЫ вкладыша диплома (одна сторона разворота
+// 210×150 landscape). KZ занимает левые 105×150, RU — правые 105×150.
+// Координаты ВСЕХ полей ниже заданы в этой шкале (от 0 до 105 по X,
+// от 0 до 150 по Y) — натив, без scale-трюков.
+const A5_W = 105;
+const A5_H = 150;
 
 const POS_KEY = 'apc_blank_positions_v1';
 const OFFSET_KEY = 'apc_blank_offset_v1';
@@ -22,70 +26,56 @@ const MONTHS_KZ = [
 //   w  — ширина поля 
 //   fs — кегль (pt ≈ px при печати на 96 dpi)
 //   b  — жирный
+// Координаты — натив для физического бланка 105×150 мм landscape (одна
+// сторона разворота). Получены прескалом старых координат (150→105 по X,
+// 210→150 по Y) — попадают в нужную область, финальные ±2–3мм нужно
+// добить через UI калибровщик («✎ Калибровка» → перетащить мышью).
 const DEFAULTS_RU = {
-  // ТКБ № [value]
-  numRU:   { x: 45,  y: 44.0,  w: 35,  fs: 12, b: true,  label: 'ТКБ № (РУ)',                     dataKey: 'diplomaNumber' },
-  // [Фамилия]
-  famRU:   { x: 72,  y: 51.0,  w: 60,  fs: 12, b: true,  label: 'Фамилия (РУ)',                   dataKey: 'lastName' },
-  // [Имя Отчество]    над (фамилия, имя, отчество)
-  nameRU:  { x: 13,  y: 58.0,  w: 90,  fs: 12, b: true,  label: 'Имя, отчество (РУ)',             dataKey: 'firstMiddle' },
-  // в том, что он в [год] году поступил
-  yInRU:   { x: 53,  y: 64.5,  w: 16,  fs: 12,           label: 'Год поступления (РУ)',           dataKey: 'admissionYear' },
-  // [в КГКП «...»]    над (полное наименование организации образования)
-  inst1RU: { x: 13,  y: 71.0,  w: 132, fs: 10,           label: 'Уч. заведение · строка 1 (РУ)',  dataKey: 'instLongV' },
-  // и в  году окончил полный курс
-  yOutRU:  { x: 9,   y: 78.0,  w: 14,  fs: 12,           label: 'Год окончания (РУ)',             dataKey: 'graduationYear' },
-  // [КГКП «...»]   над «(полное наименование организации образования) (без в)
-  inst2RU: { x: 13,  y: 84.5,  w: 95,  fs: 10,           label: 'Уч. заведение · строка 2 (РУ)',  dataKey: 'instLong' },
-  // по профессии, специальности [КОД]   — код на правой части этой же строки
-  codeRU:  { x: 115, y: 84.5,  w: 30,  fs: 10,           label: 'Код специальности (РУ)',         dataKey: 'specCode' },
-  // [«Название специальности»]   над (наименование профессии, специальности)
-  specRU:  { x: 13,  y: 91.5,  w: 130, fs: 10,           label: 'Наименование специальности (РУ)', dataKey: 'specName', multi: true },
-  // Форма обучения [очное]   над «(очное или заочное или вечернее)»
-  formRU:  { x: 47,  y: 104.0, w: 38,  fs: 11,           label: 'Форма обучения (РУ)',            dataKey: 'eduForm' },
-  // Решением итоговой аттестационной комиссии от «[ДД]»
-  pDayRU:  { x: 122, y: 110.0, w: 10,  fs: 11,           label: 'Дата комиссии · день (РУ)',      dataKey: 'protoDay' },
-  // [месяц] [год] года ему (ей) присвоена квалификация
-  pMonRU:  { x: 13,  y: 116.0, w: 22,  fs: 11,           label: 'Дата комиссии · месяц (РУ)',     dataKey: 'protoMonthRu' },
-  pYrRU:   { x: 38,  y: 116.0, w: 14,  fs: 11,           label: 'Дата комиссии · год (РУ)',       dataKey: 'protoYear' },
-  // [КОД «Название квалификации»]   ↑ над «(квалификации)» — две строки
-  qualRU:  { x: 13,  y: 124.0, w: 130, fs: 10,           label: 'Квалификация (РУ)',              dataKey: 'qualFull', multi: true },
-  // Руководитель __________ [ФИО]
-  dirRU:   { x: 95,  y: 167.0, w: 50,  fs: 11,           label: 'Руководитель · ФИО (РУ)',        dataKey: 'directorName' },
-  // Заместитель руководителя __________ [ФИО]
-  depRU:   { x: 95,  y: 174.5, w: 50,  fs: 11,           label: 'Заместитель · ФИО (РУ)',         dataKey: 'deputyName' },
-  // М.П.   Населенный пункт [г. Алматы]
-  cityRU:  { x: 60,  y: 184.0, w: 60,  fs: 11,           label: 'Населённый пункт (РУ)',          dataKey: 'city' },
-  // « [ДД] » [месяц] _________ [ГГГГ] года.
-  iDayRU:  { x: 13,  y: 191.0, w: 8,   fs: 11,           label: 'День выдачи (РУ)',               dataKey: 'issDay' },
-  iMonRU:  { x: 28,  y: 191.0, w: 24,  fs: 11,           label: 'Месяц выдачи (РУ)',              dataKey: 'issMonthRu' },
-  iYrRU:   { x: 78,  y: 191.0, w: 16,  fs: 11,           label: 'Год выдачи (РУ)',                dataKey: 'issYear' },
-  // Регистрационный номер №   [рег.№]
-  regRU:   { x: 60,  y: 198.0, w: 60,  fs: 11,           label: 'Регистрационный № (РУ)',         dataKey: 'regNumber' },
+  numRU:   { x: 31.5, y: 31.4,  w: 24.5, fs: 12, b: true,  label: 'ТКБ № (РУ)',                      dataKey: 'diplomaNumber' },
+  famRU:   { x: 50.4, y: 36.4,  w: 42,   fs: 12, b: true,  label: 'Фамилия (РУ)',                    dataKey: 'lastName' },
+  nameRU:  { x: 9.1,  y: 41.4,  w: 63,   fs: 12, b: true,  label: 'Имя, отчество (РУ)',              dataKey: 'firstMiddle' },
+  yInRU:   { x: 37.1, y: 46.0,  w: 11.2, fs: 12,           label: 'Год поступления (РУ)',            dataKey: 'admissionYear' },
+  inst1RU: { x: 9.1,  y: 50.7,  w: 92.4, fs: 10,           label: 'Уч. заведение · строка 1 (РУ)',   dataKey: 'instLongV' },
+  yOutRU:  { x: 6.3,  y: 55.7,  w: 9.8,  fs: 12,           label: 'Год окончания (РУ)',              dataKey: 'graduationYear' },
+  inst2RU: { x: 9.1,  y: 60.3,  w: 66.5, fs: 10,           label: 'Уч. заведение · строка 2 (РУ)',   dataKey: 'instLong' },
+  codeRU:  { x: 80.5, y: 60.3,  w: 21,   fs: 10,           label: 'Код специальности (РУ)',          dataKey: 'specCode' },
+  specRU:  { x: 9.1,  y: 65.4,  w: 91,   fs: 10,           label: 'Наименование специальности (РУ)', dataKey: 'specName', multi: true },
+  formRU:  { x: 32.9, y: 74.3,  w: 26.6, fs: 11,           label: 'Форма обучения (РУ)',             dataKey: 'eduForm' },
+  pDayRU:  { x: 85.4, y: 78.5,  w: 7,    fs: 11,           label: 'Дата комиссии · день (РУ)',       dataKey: 'protoDay' },
+  pMonRU:  { x: 9.1,  y: 82.8,  w: 15.4, fs: 11,           label: 'Дата комиссии · месяц (РУ)',      dataKey: 'protoMonthRu' },
+  pYrRU:   { x: 26.6, y: 82.8,  w: 9.8,  fs: 11,           label: 'Дата комиссии · год (РУ)',        dataKey: 'protoYear' },
+  qualRU:  { x: 9.1,  y: 88.6,  w: 91,   fs: 10,           label: 'Квалификация (РУ)',               dataKey: 'qualFull', multi: true },
+  dirRU:   { x: 66.5, y: 119.3, w: 35,   fs: 11,           label: 'Руководитель · ФИО (РУ)',         dataKey: 'directorName' },
+  depRU:   { x: 66.5, y: 124.6, w: 35,   fs: 11,           label: 'Заместитель · ФИО (РУ)',          dataKey: 'deputyName' },
+  cityRU:  { x: 42,   y: 131.4, w: 42,   fs: 11,           label: 'Населённый пункт (РУ)',           dataKey: 'city' },
+  iDayRU:  { x: 9.1,  y: 136.4, w: 5.6,  fs: 11,           label: 'День выдачи (РУ)',                dataKey: 'issDay' },
+  iMonRU:  { x: 19.6, y: 136.4, w: 16.8, fs: 11,           label: 'Месяц выдачи (РУ)',               dataKey: 'issMonthRu' },
+  iYrRU:   { x: 54.6, y: 136.4, w: 11.2, fs: 11,           label: 'Год выдачи (РУ)',                 dataKey: 'issYear' },
+  regRU:   { x: 42,   y: 141.4, w: 42,   fs: 11,           label: 'Регистрационный № (РУ)',          dataKey: 'regNumber' },
 };
 
 const DEFAULTS_KZ = {
-  numKZ:   { x: 42,  y: 43.5,  w: 35,  fs: 12, b: true,  label: 'ТКБ № (КЗ)',                     dataKey: 'diplomaNumber' },
-  fioKZ:   { x: 13,  y: 53.0,  w: 130, fs: 12, b: true,  label: 'ФИО (КЗ)',                       dataKey: 'fullName' },
-  yInKZ:   { x: 14,  y: 64.0,  w: 16,  fs: 12,           label: 'Жылы (КЗ)',                      dataKey: 'admissionYear' },
-  inst1KZ: { x: 36,  y: 64.0,  w: 108, fs: 10,           label: 'Оқу орны · строка 1 (КЗ)',       dataKey: 'instLongKz' },
-  yOutKZ:  { x: 20,  y: 71.0,  w: 16,  fs: 12,           label: 'Бітірген жылы (КЗ)',             dataKey: 'graduationYear' },
-  inst2KZ: { x: 40,  y: 71.0,  w: 104, fs: 10,           label: 'Оқу орны · строка 2 (КЗ)',       dataKey: 'instLongKz' },
-  codeKZ:  { x: 12,  y: 80.0,  w: 32,  fs: 10,           label: 'Код мамандығы (КЗ)',             dataKey: 'specCode' },
-  specKZ:  { x: 13,  y: 87.0,  w: 130, fs: 10,           label: 'Мамандық атауы (КЗ)',            dataKey: 'specNameKz' },
-  qualKZ:  { x: 13,  y: 102.0, w: 130, fs: 10,           label: 'Біліктілігі (КЗ)',               dataKey: 'qualFullKz' },
-  pNumKZ:  { x: 100, y: 114.0, w: 18,  fs: 11,           label: 'Протокол № (КЗ)',                dataKey: 'protoNumber' },
-  pDayKZ:  { x: 18,  y: 120.0, w: 8,   fs: 11,           label: 'Протокол · день (КЗ)',           dataKey: 'protoDay' },
-  pMonKZ:  { x: 30,  y: 120.0, w: 24,  fs: 11,           label: 'Протокол · ай (КЗ)',             dataKey: 'protoMonthKz' },
-  pYrKZ:   { x: 56,  y: 120.0, w: 14,  fs: 11,           label: 'Протокол · жыл (КЗ)',            dataKey: 'protoYear' },
-  formKZ:  { x: 36,  y: 144.0, w: 50,  fs: 11,           label: 'Оқыту нысаны (КЗ)',              dataKey: 'eduFormKz' },
-  dirKZ:   { x: 92,  y: 167.0, w: 50,  fs: 11,           label: 'Басшы · аты-жөні (КЗ)',          dataKey: 'directorName' },
-  depKZ:   { x: 92,  y: 174.5, w: 50,  fs: 11,           label: 'Орынбасары · аты-жөні (КЗ)',     dataKey: 'deputyName' },
-  cityKZ:  { x: 38,  y: 184.0, w: 50,  fs: 11,           label: 'Елді мекен (КЗ)',                dataKey: 'city' },
-  iDayKZ:  { x: 12,  y: 191.0, w: 8,   fs: 11,           label: 'Күні (КЗ)',                      dataKey: 'issDay' },
-  iMonKZ:  { x: 26,  y: 191.0, w: 24,  fs: 11,           label: 'Айы (КЗ)',                       dataKey: 'issMonthKz' },
-  iYrKZ:   { x: 58,  y: 191.0, w: 14,  fs: 11,           label: 'Жылы (КЗ)',                      dataKey: 'issYear' },
-  regKZ:   { x: 38,  y: 197.5, w: 60,  fs: 11,           label: 'Тіркеу нөмірі (КЗ)',             dataKey: 'regNumber' },
+  numKZ:   { x: 29.4, y: 31.1,  w: 24.5, fs: 12, b: true,  label: 'ТКБ № (КЗ)',                      dataKey: 'diplomaNumber' },
+  fioKZ:   { x: 9.1,  y: 37.9,  w: 91,   fs: 12, b: true,  label: 'ФИО (КЗ)',                        dataKey: 'fullName' },
+  yInKZ:   { x: 9.8,  y: 45.7,  w: 11.2, fs: 12,           label: 'Жылы (КЗ)',                       dataKey: 'admissionYear' },
+  inst1KZ: { x: 25.2, y: 45.7,  w: 75.6, fs: 10,           label: 'Оқу орны · строка 1 (КЗ)',        dataKey: 'instLongKz' },
+  yOutKZ:  { x: 14,   y: 50.7,  w: 11.2, fs: 12,           label: 'Бітірген жылы (КЗ)',              dataKey: 'graduationYear' },
+  inst2KZ: { x: 28,   y: 50.7,  w: 72.8, fs: 10,           label: 'Оқу орны · строка 2 (КЗ)',        dataKey: 'instLongKz' },
+  codeKZ:  { x: 8.4,  y: 57.1,  w: 22.4, fs: 10,           label: 'Код мамандығы (КЗ)',              dataKey: 'specCode' },
+  specKZ:  { x: 9.1,  y: 62.2,  w: 91,   fs: 10,           label: 'Мамандық атауы (КЗ)',             dataKey: 'specNameKz' },
+  qualKZ:  { x: 9.1,  y: 72.9,  w: 91,   fs: 10,           label: 'Біліктілігі (КЗ)',                dataKey: 'qualFullKz' },
+  pNumKZ:  { x: 70,   y: 81.4,  w: 12.6, fs: 11,           label: 'Протокол № (КЗ)',                 dataKey: 'protoNumber' },
+  pDayKZ:  { x: 12.6, y: 85.7,  w: 5.6,  fs: 11,           label: 'Протокол · день (КЗ)',            dataKey: 'protoDay' },
+  pMonKZ:  { x: 21,   y: 85.7,  w: 16.8, fs: 11,           label: 'Протокол · ай (КЗ)',              dataKey: 'protoMonthKz' },
+  pYrKZ:   { x: 39.2, y: 85.7,  w: 9.8,  fs: 11,           label: 'Протокол · жыл (КЗ)',             dataKey: 'protoYear' },
+  formKZ:  { x: 25.2, y: 102.9, w: 35,   fs: 11,           label: 'Оқыту нысаны (КЗ)',               dataKey: 'eduFormKz' },
+  dirKZ:   { x: 64.4, y: 119.3, w: 35,   fs: 11,           label: 'Басшы · аты-жөні (КЗ)',           dataKey: 'directorName' },
+  depKZ:   { x: 64.4, y: 124.6, w: 35,   fs: 11,           label: 'Орынбасары · аты-жөні (КЗ)',      dataKey: 'deputyName' },
+  cityKZ:  { x: 26.6, y: 131.4, w: 35,   fs: 11,           label: 'Елді мекен (КЗ)',                 dataKey: 'city' },
+  iDayKZ:  { x: 8.4,  y: 136.4, w: 5.6,  fs: 11,           label: 'Күні (КЗ)',                       dataKey: 'issDay' },
+  iMonKZ:  { x: 18.2, y: 136.4, w: 16.8, fs: 11,           label: 'Айы (КЗ)',                        dataKey: 'issMonthKz' },
+  iYrKZ:   { x: 40.6, y: 136.4, w: 9.8,  fs: 11,           label: 'Жылы (КЗ)',                       dataKey: 'issYear' },
+  regKZ:   { x: 26.6, y: 141.0, w: 42,   fs: 11,           label: 'Тіркеу нөмірі (КЗ)',              dataKey: 'regNumber' },
 };
 
 const ALL_DEFAULTS = { ru: DEFAULTS_RU, kz: DEFAULTS_KZ };
@@ -130,6 +120,9 @@ function persistPositions(positions) {
         ...(def && +Number(f.fs).toFixed(1) !== +Number(def.fs).toFixed(1)
           ? { fs: +Number(f.fs).toFixed(1) }
           : {}),
+        // Сохраняем `b` только когда отличается от дефолта — компактно
+        // и устойчиво к будущим правкам DEFAULTS.
+        ...(def && !!f.b !== !!def.b ? { b: !!f.b } : {}),
         ...(f.hidden ? { hidden: true } : {}),
       };
     }
@@ -614,16 +607,27 @@ function clamp(v, min, max) {
 // от верхнего левого угла A5). Здесь мм линейно мапятся в % скана,
 // потому что у скана свой декоративный запас сверху/по бокам.
 // SCAN-константы калибруются один раз — если съезжает, крутить их.
+// Скан /diplom-template.jpg показывает разворот 210×150 (landscape).
+// Картинка имеет небольшие декоративные поля по краям — эти константы
+// мапят мм-координаты бланка в % ширины/высоты скана. Подкрутить при
+// замене скана: если поля «выезжают» — уменьшить xScale/yScale, если
+// «не доходят» — увеличить; xOffset/yOffset сдвигают начало координат.
+// Подогнано под актуальный скан 2550×1830:
+//   левая граница бланка ~x=80px (3.1%), правая ~x=2470px (96.9%)
+//   верх бланка ~y=10px (0.5%), низ ~y=1780px (97.3%)
 const SCAN = {
-  xScale: 0.892,   // содержимое формы занимает ~89% ширины скана
-  xOffset: 5.2,    // ~5% левого декоративного поля
-  yScale: 0.775,   // вертикально форма ужата (декор/герб сверху ~22%)
-  yOffset: 22.3,   // ~22% верхнего декора (бьёт по линии «ДИПЛОМ»)
+  xScale: 0.938,
+  xOffset: 3.1,
+  yScale: 0.968,
+  yOffset: 0.5,
 };
 
-const toScanX = (mm) => mm / 300 * 100 * SCAN.xScale + SCAN.xOffset;
-const toScanY = (mm) => mm / 210 * 100 * SCAN.yScale + SCAN.yOffset;
-const toScanW = (mm) => mm / 300 * 100 * SCAN.xScale;
+// Разворот в мм: 210мм ширина × 150мм высота. Каждая сторона 0..105мм
+// по X в локальных координатах; в DiplomaSpread RU рендерится с
+// xOffsetMm=105 (см. ниже).
+const toScanX = (mm) => mm / 210 * 100 * SCAN.xScale + SCAN.xOffset;
+const toScanY = (mm) => mm / 150 * 100 * SCAN.yScale + SCAN.yOffset;
+const toScanW = (mm) => mm / 210 * 100 * SCAN.xScale;
 
 export function DiplomaSpread({ t, calibration }) {
   const store = useBlankPositions();
@@ -642,9 +646,9 @@ export function DiplomaSpread({ t, calibration }) {
     setSelectedId(`${sideKey}_${id}`);
     const container = e.currentTarget.closest('.diploma-preview');
     const rect = container.getBoundingClientRect();
-    // 1px скана = (300mm / rect.width) / xScale мм по форме
-    const mmPerPxX = 300 / rect.width / SCAN.xScale;
-    const mmPerPxY = 210 / rect.height / SCAN.yScale;
+    // 1px скана = (210mm / rect.width) / xScale мм по форме
+    const mmPerPxX = 210 / rect.width / SCAN.xScale;
+    const mmPerPxY = 150 / rect.height / SCAN.yScale;
     const startX = e.clientX;
     const startY = e.clientY;
     const start = positions[sideKey][id];
@@ -652,8 +656,8 @@ export function DiplomaSpread({ t, calibration }) {
       const dx = (ev.clientX - startX) * mmPerPxX;
       const dy = (ev.clientY - startY) * mmPerPxY;
       store.updateField(sideKey, id, {
-        x: clamp(start.x + dx, 0, 150),
-        y: clamp(start.y + dy, 0, 210),
+        x: clamp(start.x + dx, 0, 105),
+        y: clamp(start.y + dy, 0, 150),
       });
     };
     const onUp = () => {
@@ -702,7 +706,7 @@ export function DiplomaSpread({ t, calibration }) {
         <img src="/diplom-template.jpg" alt="Бланк диплома" />
         <div className="diploma-preview-overlay">
           {Object.entries(positions.kz).map(([id, f]) => renderField('kz', id, f, 0))}
-          {Object.entries(positions.ru).map(([id, f]) => renderField('ru', id, f, 150))}
+          {Object.entries(positions.ru).map(([id, f]) => renderField('ru', id, f, 105))}
         </div>
       </div>
 
@@ -727,7 +731,7 @@ function DiplomaCalibPanel({ store, selectedId, onSelect, ctx }) {
   };
   const nudge = (key, delta) => {
     if (!sel) return;
-    store.updateField(sideKey, id, { [key]: clamp(sel[key] + delta, 0, key === 'y' ? 210 : 150) });
+    store.updateField(sideKey, id, { [key]: clamp(sel[key] + delta, 0, key === 'y' ? 150 : 105) });
   };
 
   return (
@@ -791,7 +795,7 @@ function DiplomaCalibPanel({ store, selectedId, onSelect, ctx }) {
               <input
                 type="number" step="0.1"
                 value={Number(sel.x).toFixed(1)}
-                onChange={(e) => store.updateField(sideKey, id, { x: clamp(num(e.target.value), 0, 150) })}
+                onChange={(e) => store.updateField(sideKey, id, { x: clamp(num(e.target.value), 0, 105) })}
               />
             </label>
             <label>
@@ -799,7 +803,7 @@ function DiplomaCalibPanel({ store, selectedId, onSelect, ctx }) {
               <input
                 type="number" step="0.1"
                 value={Number(sel.y).toFixed(1)}
-                onChange={(e) => store.updateField(sideKey, id, { y: clamp(num(e.target.value), 0, 210) })}
+                onChange={(e) => store.updateField(sideKey, id, { y: clamp(num(e.target.value), 0, 150) })}
               />
             </label>
             <label>
@@ -807,7 +811,7 @@ function DiplomaCalibPanel({ store, selectedId, onSelect, ctx }) {
               <input
                 type="number" step="0.1"
                 value={Number(sel.w).toFixed(1)}
-                onChange={(e) => store.updateField(sideKey, id, { w: clamp(num(e.target.value), 2, 150) })}
+                onChange={(e) => store.updateField(sideKey, id, { w: clamp(num(e.target.value), 2, 105) })}
               />
             </label>
           </div>
@@ -832,17 +836,20 @@ function DiplomaCalibPanel({ store, selectedId, onSelect, ctx }) {
               />
             </label>
           </div>
-          <div className="calib-nudge" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+          <div className="calib-nudge" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
             <button onClick={() => store.updateField(sideKey, id, { fs: clamp(sel.fs - 0.5, 6, 40) })} title="Кегль −0.5">A−</button>
             <button onClick={() => store.updateField(sideKey, id, { fs: clamp(sel.fs + 0.5, 6, 40) })} title="Кегль +0.5">A+</button>
             <button
+              onClick={() => store.updateField(sideKey, id, { b: !sel.b })}
+              title={sel.b ? 'Снять жирный' : 'Сделать жирным'}
+              style={{
+                fontWeight: 'bold',
+                background: sel.b ? 'var(--brand, #2563eb)' : undefined,
+                color: sel.b ? '#fff' : undefined,
+              }}
+            >B</button>
+            <button
               onClick={() => {
-                const def = positions[sideKey]?.[id] && (
-                  ['kz','ru'].map(() => null), null  // placeholder; actual default from ALL_DEFAULTS via store
-                );
-                // Сбрасываем только fs к дефолту: используем resetField? Нет, он сбрасывает всё.
-                // Берём fs из изначального DEFAULTS через сравнение метки — fs хранится в самом f.
-                // Простейший путь — обновить fs на дефолтный, который лежит в DEFAULTS_*.
                 const defFs = (sideKey === 'kz' ? DEFAULTS_KZ : DEFAULTS_RU)[id]?.fs;
                 if (defFs != null) store.updateField(sideKey, id, { fs: defFs });
               }}
@@ -1130,9 +1137,18 @@ function BlankCalibPanel({
               />
             </label>
           </div>
-          <div className="calib-nudge" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+          <div className="calib-nudge" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
             <button onClick={() => onUpdate(selectedId, { fs: clamp(sel.fs - 0.5, 6, 40) })} title="Кегль −0.5">A−</button>
             <button onClick={() => onUpdate(selectedId, { fs: clamp(sel.fs + 0.5, 6, 40) })} title="Кегль +0.5">A+</button>
+            <button
+              onClick={() => onUpdate(selectedId, { b: !sel.b })}
+              title={sel.b ? 'Снять жирный' : 'Сделать жирным'}
+              style={{
+                fontWeight: 'bold',
+                background: sel.b ? 'var(--brand, #2563eb)' : undefined,
+                color: sel.b ? '#fff' : undefined,
+              }}
+            >B</button>
             <button
               onClick={() => {
                 const defFs = (side === 'kz' ? DEFAULTS_KZ : DEFAULTS_RU)[selectedId]?.fs;

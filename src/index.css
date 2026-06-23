@@ -848,10 +848,8 @@ textarea:focus {
   top: 0;
   left: 0;
   z-index: 1;
-  width: 150mm !important;
-  height: 210mm !important;
-  transform: scale(0.7);
-  transform-origin: top left;
+  width: 105mm !important;
+  height: 150mm !important;
   background: transparent;
   box-shadow: none !important;
   margin: 0 !important;
@@ -1202,9 +1200,6 @@ textarea:focus {
     width: 195mm;
     margin: 5mm auto;
   }
-  /* Размер бланка (150×210) задаётся inline-стилем в JSX и правилом
-     для .print-area-a4 .print-spread-a4 > .sheet.blank-sheet (где он
-     уже 150×210 с scale 0.7 = 105×147). Здесь только убираем тень и поля. */
   .sheet.blank-sheet {
     box-shadow: none !important;
     margin: 0 !important;
